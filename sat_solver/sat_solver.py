@@ -1,3 +1,7 @@
+"""
+SAT Solver reading formulas from file.
+Based upon the Davis & Putnam algorithm.
+"""
 
 from typing import *
 
@@ -8,12 +12,19 @@ class SatSolver:
     def __init__(self, filename: str) -> None:
         self.filename: str = filename
 
-    def read_file(self) -> Generator[str, None, None]:
+    def solve(self) -> bool:
+        clauses: List[List[str]] = self._get_formatted_clauses_from_file()
+        return False
+
+    def _get_formatted_clauses_from_file(self) -> List[List[str]]:
         with open(self.filename) as f:
-            for line in f:
-                yield f.readline()
+            return [LogicParser(line).postfix_formula for line in f]
+
+    def _find_mono_literals(self, clauses: List[List[str]]) -> List[List[str]]:
+        return [clause for clause in clauses if len(clause) == 1]
 
 
-while True:
-    logicParser = LogicParser(input("Please type in the formula : \n"))
-    print(f"{logicParser.formula} => {logicParser.postfix_formula}")
+if __name__ == "__main__":
+    while True:
+        logicParser = LogicParser(input("Please type in the formula : \n"))
+        print(f"{logicParser.formula} => {logicParser.postfix_formula}")
