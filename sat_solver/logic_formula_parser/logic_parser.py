@@ -97,8 +97,6 @@ class LogicParser:
         return char.isalpha()
 
     def _is_operator(self, char: str) -> bool:
-        # if (char in operators for operators in self.operators_by_precedence):
-        #     return True
         for operators in self.operators_by_precedence:
             if char in operators:
                 return True
@@ -121,7 +119,7 @@ class LogicParser:
             return True
 
     def _format(self, formula: str) -> str:
-        new_formula: str = formula[::]
+        new_formula: str = formula[::].strip("\n")
         for key, value in self.formatting_substitutions.items():
             new_formula = new_formula.replace(key, value)
         if new_formula[0] != "(" or new_formula[-1:] != ")":
