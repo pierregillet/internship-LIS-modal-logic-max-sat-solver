@@ -129,11 +129,11 @@ class LogicParser:
         return new_formula
 
     @property
-    def formula(self):
+    def formula(self) -> str:
         return self._formula
 
     @property
-    def postfix_formula(self):
+    def postfix_formula(self) -> List[str]:
         return self._split_formula_postfix()
 
 
