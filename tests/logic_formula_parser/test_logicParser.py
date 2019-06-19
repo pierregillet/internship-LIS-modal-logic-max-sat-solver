@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from sat_solver.logic_formula_parser import LogicParser, _OPERATORS_BY_PRECEDENCE
+from sat_solver.logic_formula_parser.logic_parser\
+    import LogicParser, OPERATORS_BY_PRECEDENCE
 
 
 class TestLogicParser(TestCase):
@@ -21,7 +22,7 @@ class TestLogicParser(TestCase):
             with (self.subTest(operator=operator)
                   and self.assertRaises(ValueError)):
                 logic_parser._get_operator_weight(operator)
-        for operator_set in _OPERATORS_BY_PRECEDENCE:
+        for operator_set in OPERATORS_BY_PRECEDENCE:
             for operator in operator_set:
                 with self.subTest(operator=operator):
                     self.assertGreaterEqual(

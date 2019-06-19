@@ -5,7 +5,7 @@ Based upon the Davis & Putnam algorithm.
 
 from typing import *
 
-from logic_formula_parser import LogicParser
+from logic_formula_parser.logic_parser import LogicParser
 
 
 class SatSolver:
@@ -20,7 +20,8 @@ class SatSolver:
         with open(self.filename) as f:
             return [LogicParser(line).postfix_formula for line in f]
 
-    def _find_mono_literals(self, clauses: List[List[str]]) -> List[List[str]]:
+    @staticmethod
+    def _find_mono_literals(clauses: List[List[str]]) -> List[List[str]]:
         return [clause for clause in clauses if len(clause) == 1]
 
 

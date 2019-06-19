@@ -1,6 +1,6 @@
 from typing import *
 
-_FORMATTING_SUBSTITUTIONS: Dict[str, str] = {
+FORMATTING_SUBSTITUTIONS: Dict[str, str] = {
     "[]": "☐",
     "<>": "◇",
     "->": "→",
@@ -9,7 +9,7 @@ _FORMATTING_SUBSTITUTIONS: Dict[str, str] = {
     "|": "∨",
 }
 
-_OPERATORS_BY_PRECEDENCE: List[Set[str]] = [
+OPERATORS_BY_PRECEDENCE: List[Set[str]] = [
     {"☐", "◇", "¬"}, {"∧", "∨"}, {"→"}
 ]
 
@@ -23,11 +23,11 @@ class LogicParser:
         self._formula: str
 
         self.formatting_substitutions = (
-            _FORMATTING_SUBSTITUTIONS if formatting_substitutions is None
+            FORMATTING_SUBSTITUTIONS if formatting_substitutions is None
             else formatting_substitutions
         )
         self.operators_by_precedence = (
-            _OPERATORS_BY_PRECEDENCE if operators_by_precedence is None
+            OPERATORS_BY_PRECEDENCE if operators_by_precedence is None
             else operators_by_precedence
         )
 
