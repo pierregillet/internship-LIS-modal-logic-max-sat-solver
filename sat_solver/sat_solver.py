@@ -10,15 +10,19 @@ from logic_formula_parser.logic_parser import LogicParser
 from clauses_utils import find_mono_literals, is_consistant_set_of_literals,\
                           is_mono_literal, contains_only_mono_literals
 
+
 class SatSolver:
+    """SAT Solver using the Davis & Putnam algorithm."""
     def __init__(self, filename: str) -> None:
         self.filename: str = filename
 
     def solve(self) -> bool:
+        """Return True if the the clauses in the file are solvable."""
         clauses: List[List[str]] = self._get_formatted_clauses_from_file()
         return self._davis_putnam_algorithm(clauses)
 
     def _davis_putnam_algorithm(self, clauses: List[List[str]]) -> bool:
+        """Return True if the clauses are solvable."""
         remaining_clauses = clauses[:]
         # while remaining_clauses and :
 
