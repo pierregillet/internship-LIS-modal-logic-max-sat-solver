@@ -30,6 +30,7 @@ def is_consistant_set_of_literals(clauses: List[List[str]]) -> bool:
     return False if [clause for clause in clauses
                     if not is_mono_literal(clause)] else True
 
+
 def convert_literals_to_integers(clauses: List[List[str]]):
     """ Replace literals in each clause with an integer corresponding
     to its position in the alphabet.
