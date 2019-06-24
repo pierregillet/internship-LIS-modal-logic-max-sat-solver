@@ -1,14 +1,15 @@
 """
-SAT Solver reading formulas from file.
-Based upon the Davis & Putnam algorithm.
+SAT Solver reading clauses from file. It expects the clauses in conjunctive
+normal form.
+Based upon the DPLL algorithm.
 """
 
 import pathlib
+from copy import copy
 from typing import *
 
 from logic_formula_parser.logic_parser import LogicParser
-from clauses_utils import find_mono_literals, is_consistant_set_of_literals,\
-                          is_mono_literal, contains_only_mono_literals
+from clauses import Clauses
 
 
 class SatSolver:
@@ -18,26 +19,48 @@ class SatSolver:
 
     def solve(self) -> bool:
         """Return True if the the clauses in the file are solvable."""
-        clauses: List[List[str]] = self._get_formatted_clauses_from_file()
+        clauses: Clauses = Clauses(self._get_formatted_clauses_from_file())
         return self._davis_putnam_algorithm(clauses)
 
-    def _davis_putnam_algorithm(self, clauses: List[List[str]]) -> bool:
+    def _davis_putnam_algorithm(self, clauses: Clauses) -> bool:
         """Return True if the clauses are solvable."""
-        remaining_clauses = clauses[:]
-        # while remaining_clauses and :
+        # remaining_clauses = copy(clauses)
+        if clauses.is_consistant_set_of_literals():
+            return True
+        if clauses.contains_empty_clause():
+            return False
+        mono_literals: FrozenSet[int] = clauses.find_mono_literals()
+        while mono_literals:
+            clauses = self._unit_propagate(clauses, mono_literals[0])
+            mono_literals = clauses.find_mono_literals()
 
-        if contains_only_mono_literals(clauses):
-            mono_literals: List[List[str]] = find_mono_literals(clauses)
+        pure_literals = self._find_pure_literals(remaining_clauses)
+
+        # if contains_only_mono_literals(clauses):
+        #     mono_literals: List[List[str]] = find_mono_literals(clauses)
         return False
 
-    def _get_formatted_clauses_from_file(self) -> List[List[str]]:
+    @staticmethod
+    def _unit_propagate(clauses: List[List[str]],
+                        mono_literal: List[str]) -> List[List[str]]:
+
+        return clauses
+
+    @staticmethod
+    def _find_pure_literals(clauses: List[List[int]]) -> Set[int]:
+        literals_set = {literal for clause in clauses for literal in clause}
+        return {literal for literal in literals_set
+                if -literal not in literals_set}
+
+    def _get_formatted_clauses_from_file(self) -> FrozenSet[Tuple[str]]:
         with open(self.filename) as f:
-            return [LogicParser(line).postfix_formula for line in f]
+            return frozenset(LogicParser(line).postfix_formula for line in f)
 
 
 if __name__ == "__main__":
     sat_solver = SatSolver(
-        f"{pathlib.Path(__file__).parent}/satisfiable_clauses.txt"
+        f"{pathlib.Path(__file__).parent.parent}"
+        "/tests/sat_solver/satisfiable_clauses.txt"
     )
     sat_solver.solve()
     logicParser = LogicParser(input("Please type in the formula : \n"))

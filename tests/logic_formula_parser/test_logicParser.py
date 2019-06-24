@@ -37,10 +37,10 @@ class TestLogicParser(TestCase):
 
     def test__split_formula_postfix(self):
         split_formula = {
-            "(a∧b)": ["a", "b", "∧"],
-            "(a∧(b|c))": ["a", "b", "c", "∨", "∧"],
-            "((b|c)∧a)": ["b", "c", "∨", "a", "∧"],
-            "((b|c)∧a->(d|c))": ["b", "c", "∨", "a", "∧", "d", "c", "∨", "→"],
+            "(a∧b)": ("a", "b", "∧"),
+            "(a∧(b|c))": ("a", "b", "c", "∨", "∧"),
+            "((b|c)∧a)": ("b", "c", "∨", "a", "∧"),
+            "((b|c)∧a->(d|c))": ("b", "c", "∨", "a", "∧", "d", "c", "∨", "→"),
         }
         for key, value in split_formula.items():
             logic_parser = LogicParser(key)

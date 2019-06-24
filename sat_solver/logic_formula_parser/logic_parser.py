@@ -9,17 +9,19 @@ FORMATTING_SUBSTITUTIONS: Dict[str, str] = {
     "|": "∨",
 }
 
-OPERATORS_BY_PRECEDENCE: List[Set[str]] = [
-    {"☐", "◇", "¬"}, {"∧", "∨"}, {"→"}
-]
+OPERATORS_BY_PRECEDENCE: Tuple[FrozenSet[str], ...] = (
+    frozenset({"☐", "◇", "¬"}),
+    frozenset({"∧", "∨"}),
+    frozenset({"→"}),
+)
 
 
 class LogicParser:
     def __init__(self, formula,
                  formatting_substitutions: Dict[str, str] = None,
-                 operators_by_precedence: List[Set[str]] = None):
+                 operators_by_precedence: Tuple[FrozenSet[str], ...] = None):
         self.formatting_substitutions: Dict[str, str]
-        self.operators_by_precedence: List[Set[str]]
+        self.operators_by_precedence: Tuple[FrozenSet[str], ...]
         self._formula: str
 
         self.formatting_substitutions = (
@@ -42,17 +44,17 @@ class LogicParser:
             )
         self._formula: str = formatted_formula
 
-    def _split_formula_postfix(self) -> List[str]:
+    def _split_formula_postfix(self) -> Tuple[str]:
         """Splits the formula to a list of postfixed operands and operators.
 
         Expects the formula to be syntactically correct and to start and end
         with parenthesis."""
-        output: List[str] = []
+        output: Tuple[str] = tuple()
         stack: List[str] = [self.formula[0]]
         iterator: Iterator[str] = iter(self.formula[1::])
         for char in iterator:  # type: str
             if self._is_operand(char):
-                output.append(char)
+                output += tuple([char])
             elif char == "(":
                 stack.append(char)
             elif char == ")":
@@ -60,7 +62,7 @@ class LogicParser:
                     element = stack.pop()
                     if element == "(":
                         break
-                    output.append(element)
+                    output += tuple([element])
             else:  # If an operator is encountered
                 self._get_operator_weight(char)
                 operator_found = char
@@ -69,7 +71,7 @@ class LogicParser:
                         break
                     elif (self._get_operator_weight(operator)
                           <= self._get_operator_weight(operator_found)):
-                        output.append(stack.pop())
+                        output += tuple([stack.pop()])
                 stack.append(operator_found)
         return output
 
@@ -131,7 +133,7 @@ class LogicParser:
         return self._formula
 
     @property
-    def postfix_formula(self) -> List[str]:
+    def postfix_formula(self) -> Tuple[str]:
         return self._split_formula_postfix()
 
 
