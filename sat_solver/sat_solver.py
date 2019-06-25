@@ -5,7 +5,6 @@ Based upon the DPLL algorithm.
 """
 
 import pathlib
-from copy import copy
 from typing import *
 
 from logic_formula_parser.logic_parser import LogicParser
@@ -14,13 +13,16 @@ from clauses import Clauses
 
 class SatSolver:
     """SAT Solver using the Davis & Putnam algorithm."""
-    def __init__(self, filename: str) -> None:
-        self.filename: str = filename
+    def __init__(self, clauses: Clauses) -> None:
+        self.clauses = clauses
+
+    @classmethod
+    def from_file(cls, filename: str):
+        return cls(cls._get_clauses_from_file(filename))
 
     def solve(self) -> bool:
-        """Return True if the the clauses in the file are solvable."""
-        clauses: Clauses = Clauses(self._get_formatted_clauses_from_file())
-        return self._davis_putnam_algorithm(clauses)
+        """Return True if the the clauses stored as attribute are solvable."""
+        return self._davis_putnam_algorithm(self.clauses)
 
     def _davis_putnam_algorithm(self, clauses: Clauses) -> bool:
         """Return True if the clauses are solvable."""
@@ -31,34 +33,40 @@ class SatSolver:
             return False
         mono_literals: FrozenSet[int] = clauses.find_mono_literals()
         while mono_literals:
-            clauses = self._unit_propagate(clauses, mono_literals[0])
+            clauses = self._unit_propagate(clauses, next(iter(mono_literals)))
             mono_literals = clauses.find_mono_literals()
 
-        pure_literals = self._find_pure_literals(remaining_clauses)
+        pure_literals = self._find_pure_literals(clauses)
 
         # if contains_only_mono_literals(clauses):
         #     mono_literals: List[List[str]] = find_mono_literals(clauses)
         return False
 
     @staticmethod
-    def _unit_propagate(clauses: List[List[str]],
-                        mono_literal: List[str]) -> List[List[str]]:
+    def _unit_propagate(clauses: Clauses,
+                        mono_literal: int) -> Clauses:
 
         return clauses
 
     @staticmethod
-    def _find_pure_literals(clauses: List[List[int]]) -> Set[int]:
-        literals_set = {literal for clause in clauses for literal in clause}
+    def _find_pure_literals(clauses: Clauses) -> Set[int]:
+        literals_set = {
+            literal for clause in clauses.clauses for literal in clause
+        }
         return {literal for literal in literals_set
                 if -literal not in literals_set}
 
-    def _get_formatted_clauses_from_file(self) -> FrozenSet[Tuple[str]]:
-        with open(self.filename) as f:
-            return frozenset(LogicParser(line).postfix_formula for line in f)
+    @staticmethod
+    def _get_clauses_from_file(filename: str) -> Clauses:
+        with open(filename) as f:
+            clauses = frozenset(
+                frozenset(LogicParser(line).postfix_formula) for line in f
+            )
+            return Clauses.from_str(clauses)
 
 
 if __name__ == "__main__":
-    sat_solver = SatSolver(
+    sat_solver = SatSolver.from_file(
         f"{pathlib.Path(__file__).parent.parent}"
         "/tests/sat_solver/satisfiable_clauses.txt"
     )

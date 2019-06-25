@@ -12,7 +12,7 @@ class Clauses:
     """Set of clauses in conjunctive normal form."""
 
     def __init__(self, clauses: FrozenSet[FrozenSet[int]]) -> None:
-        self.clauses: FrozenSet[FrozenSet[int]] = clauses
+        self._clauses: FrozenSet[FrozenSet[int]] = clauses
 
     @classmethod
     def from_str(cls, clauses: FrozenSet[FrozenSet[str]]):
@@ -38,7 +38,7 @@ class Clauses:
     (-0 is the same as +0, and the sign will disappear).
     """
         output: List[FrozenSet[int]] = []
-        for formula in clauses[1:]:
+        for formula in clauses:
             for char in formula:
                 if char.isalpha():
                     output.append(string.ascii_letters.index(char) + 1)
@@ -74,9 +74,10 @@ class Clauses:
         return bool([clause for clause in self.clauses if not clause])
 
     @property
-    def clauses(self):
-        return self.clauses
+    def yield_clauses(self):
+        for clause in self.clauses:
+            yield clause
 
-    @clauses.setter
-    def clauses(self, value):
-        self._clauses = value
+    @property
+    def clauses(self):
+        return self._clauses

@@ -1,10 +1,10 @@
-from unittest import TestCase
+import unittest
 
 from sat_solver.logic_formula_parser.logic_parser\
     import LogicParser, OPERATORS_BY_PRECEDENCE
 
 
-class TestLogicParser(TestCase):
+class TestLogicParser(unittest.TestCase):
     def test__is_syntactically_correct(self):
         incorrect_formulas = ["(aab", "a&¬b)", ")", "(", "(", " ", "())((¬)", "", ]
         correct_formulas = ["(aab)", "()", "¬a∧(b∨¬c)", "(((a∨(¬b))))", "((a)∧(¬b))∨((c)∨◇b)", ]
