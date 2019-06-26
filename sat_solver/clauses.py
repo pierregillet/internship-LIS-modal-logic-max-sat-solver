@@ -1,12 +1,11 @@
 """
-Verifications and manipulations of the clauses such as integer substitutions
+Verifications and manipulations of the clauses such as unit propagation
 or mono-literal checks.
 """
 
 from __future__ import annotations
+from itertools import chain
 from typing import *
-
-from logic_formula_parser.logic_parser import LogicParser
 
 
 class Clauses:
@@ -14,11 +13,6 @@ class Clauses:
 
     def __init__(self, clauses: FrozenSet[FrozenSet[int]]) -> None:
         self._clauses: FrozenSet[FrozenSet[int]] = clauses
-
-    @classmethod
-    def from_str(cls, clauses: FrozenSet[Tuple[str, ...]]):
-        return cls(frozenset(LogicParser.as_integers(clause)
-                             for clause in clauses))
 
     @classmethod
     def from_int(cls, clauses: FrozenSet[FrozenSet[int]]):
@@ -29,39 +23,29 @@ class Clauses:
         """Return true if the argument is a mono-literal."""
         return len(clause) == 1
 
-    # @staticmethod
-    # def convert_literals_to_integers(clauses: FrozenSet[Tuple[str, ...]])\
-    #         -> FrozenSet[FrozenSet[int]]:
-    #     """ Replace literals in each clause with an integer corresponding
-    #     to its position + 1 in the alphabet. If the literal is negative,
-    #     the integer takes a negative value.
-    #
-    #     1 is added to avoid the case of 0, which is problematic to work with
-    #     (-0 is the same as +0, and the sign will disappear).
-    #     """
-    #     output: List[List[int]] = []
-    #     for formula in clauses:
-    #         output.append([])
-    #         for char in formula:
-    #             if char.isalpha():
-    #                 output[-1].append(string.ascii_letters.index(char) + 1)
-    #             elif char == "¬":
-    #                 output[-1][-1] *= -1
-    #     return frozenset(frozenset(clause) for clause in output)
+    def _unit_propagate(self, mono_literal: int) -> Clauses:
+        clauses: Set[Set[int]] = set(map(set, self.clauses))
 
-    def _unit_propagate(self, mono_literal: List[str]) -> Clauses:
-        clauses = self.clauses
-        return Clauses(clauses)
+        for clause in clauses:
+            if mono_literal in clause:
+                clauses.remove(clause)
+            elif -mono_literal in clause:
+                clause.remove(-mono_literal)
+
+        return Clauses(frozenset(map(frozenset, clauses)))
 
     def contains_only_mono_literals(self) -> bool:
         """Return True if the list contains only mono-literals."""
-        return True if [clause for clause in self.clauses
-                        if not self.is_mono_literal(clause)] else False
+        multi_literals = filter(
+            lambda x: not self.is_mono_literal(x), self.clauses
+        )
+        return True if not multi_literals else False
 
     def find_mono_literals(self) -> FrozenSet[int]:
         """Return a FrozenSet containing every mono-literal."""
-        return FrozenSet(clause for clause in self.clauses
-                         if self.is_mono_literal(clause))
+        return frozenset(chain.from_iterable(
+            filter(lambda x: self.is_mono_literal(x), self.clauses)
+        ))
 
     def is_consistant_set_of_literals(self) -> bool:
         """Return True if the list contains a consistent set of literals.
@@ -69,17 +53,13 @@ class Clauses:
         A consistent set of literals is a set that doesn't contain a literal
         and its contrary.
         """
-        return False if {clause for clause in self.clauses
-                         if not self.is_mono_literal(clause)} else True
+        flat_set = frozenset(chain.from_iterable(self.clauses))
+        inconsistencies = frozenset(filter(lambda x: -x in flat_set, flat_set))
+        return False if inconsistencies else True
 
     def contains_empty_clause(self):
         """Return True if the list contains an empty clause."""
-        return bool([clause for clause in self.clauses if not clause])
-
-    @property
-    def yield_clauses(self):
-        for clause in self.clauses:
-            yield clause
+        return bool(list(filter(lambda x: not x, self.clauses)))
 
     @property
     def clauses(self):
