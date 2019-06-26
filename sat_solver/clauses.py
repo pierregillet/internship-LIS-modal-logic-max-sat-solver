@@ -5,7 +5,8 @@ or mono-literal checks.
 
 from __future__ import annotations
 from typing import *
-import string
+
+from logic_formula_parser.logic_parser import LogicParser
 
 
 class Clauses:
@@ -15,8 +16,9 @@ class Clauses:
         self._clauses: FrozenSet[FrozenSet[int]] = clauses
 
     @classmethod
-    def from_str(cls, clauses: FrozenSet[FrozenSet[str]]):
-        return cls(cls.convert_literals_to_integers(clauses))
+    def from_str(cls, clauses: FrozenSet[Tuple[str, ...]]):
+        return cls(frozenset(LogicParser.as_integers(clause)
+                             for clause in clauses))
 
     @classmethod
     def from_int(cls, clauses: FrozenSet[FrozenSet[int]]):
@@ -27,24 +29,25 @@ class Clauses:
         """Return true if the argument is a mono-literal."""
         return len(clause) == 1
 
-    @staticmethod
-    def convert_literals_to_integers(clauses: FrozenSet[FrozenSet[str]])\
-            -> FrozenSet[FrozenSet[int]]:
-        """ Replace literals in each clause with an integer corresponding
-    to its position + 1 in the alphabet. If the literal is negative,
-    the integer takes a negative value.
-
-    1 is added to avoid the case of 0, which is problematic to work with
-    (-0 is the same as +0, and the sign will disappear).
-    """
-        output: List[FrozenSet[int]] = []
-        for formula in clauses:
-            for char in formula:
-                if char.isalpha():
-                    output.append(string.ascii_letters.index(char) + 1)
-                elif char == "¬":
-                    output[-1] *= -1
-        return frozenset(output)
+    # @staticmethod
+    # def convert_literals_to_integers(clauses: FrozenSet[Tuple[str, ...]])\
+    #         -> FrozenSet[FrozenSet[int]]:
+    #     """ Replace literals in each clause with an integer corresponding
+    #     to its position + 1 in the alphabet. If the literal is negative,
+    #     the integer takes a negative value.
+    #
+    #     1 is added to avoid the case of 0, which is problematic to work with
+    #     (-0 is the same as +0, and the sign will disappear).
+    #     """
+    #     output: List[List[int]] = []
+    #     for formula in clauses:
+    #         output.append([])
+    #         for char in formula:
+    #             if char.isalpha():
+    #                 output[-1].append(string.ascii_letters.index(char) + 1)
+    #             elif char == "¬":
+    #                 output[-1][-1] *= -1
+    #     return frozenset(frozenset(clause) for clause in output)
 
     def _unit_propagate(self, mono_literal: List[str]) -> Clauses:
         clauses = self.clauses

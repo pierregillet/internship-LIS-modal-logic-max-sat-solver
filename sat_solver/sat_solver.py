@@ -59,10 +59,8 @@ class SatSolver:
     @staticmethod
     def _get_clauses_from_file(filename: str) -> Clauses:
         with open(filename) as f:
-            clauses = frozenset(
-                frozenset(LogicParser(line).postfix_formula) for line in f
-            )
-            return Clauses.from_str(clauses)
+            clauses = frozenset(frozenset(LogicParser(line).clause) for line in f)
+        return Clauses.from_int(clauses)
 
 
 if __name__ == "__main__":
