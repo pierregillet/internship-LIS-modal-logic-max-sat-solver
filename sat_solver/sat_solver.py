@@ -38,15 +38,7 @@ class SatSolver:
 
         pure_literals = self._find_pure_literals(clauses)
 
-        # if contains_only_mono_literals(clauses):
-        #     mono_literals: List[List[str]] = find_mono_literals(clauses)
         return False
-
-    @staticmethod
-    def _unit_propagate(clauses: Clauses,
-                        mono_literal: int) -> Clauses:
-
-        return clauses
 
     @staticmethod
     def _find_pure_literals(clauses: Clauses) -> Set[int]:
