@@ -24,7 +24,7 @@ class Clauses:
         return len(clause) == 1
 
     def _unit_propagate(self, mono_literal: int) -> Clauses:
-        clauses: Set[Set[int]] = set(map(set, self.clauses))
+        clauses: List[List[int]] = list(map(list, self.clauses))
 
         for clause in clauses:
             if mono_literal in clause:
