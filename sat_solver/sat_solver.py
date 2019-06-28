@@ -14,13 +14,17 @@ from .clauses import Clauses
 
 
 class SatSolver:
-    """SAT Solver using the Davis & Putnam algorithm."""
+    """SAT Solver using the DPLL algorithm."""
     def __init__(self, clauses: Clauses) -> None:
         self.clauses = clauses
 
     @classmethod
     def from_file(cls, filename: str):
-        return cls(cls._get_clauses_from_file(filename))
+        """Read the clauses from a file."""
+        with open(filename) as f:
+            clauses = frozenset(frozenset(LogicParser(line).clause)
+                                for line in f if line[0] != "#")
+        return cls(Clauses.from_int(clauses))
 
     def solve(self) -> Optional[Clauses]:
         """Return True if the the clauses stored as attribute are solvable."""
