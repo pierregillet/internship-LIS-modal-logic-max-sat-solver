@@ -5,10 +5,12 @@ Based upon the DPLL algorithm.
 """
 
 import pathlib
+import random
+from itertools import chain
 from typing import *
 
-from logic_formula_parser.logic_parser import LogicParser
-from clauses import Clauses
+from .logic_formula_parser.logic_parser import LogicParser
+from .clauses import Clauses
 
 
 class SatSolver:
@@ -20,38 +22,52 @@ class SatSolver:
     def from_file(cls, filename: str):
         return cls(cls._get_clauses_from_file(filename))
 
-    def solve(self) -> bool:
+    def solve(self) -> Optional[Clauses]:
         """Return True if the the clauses stored as attribute are solvable."""
         return self._davis_putnam_algorithm(self.clauses)
 
-    def _davis_putnam_algorithm(self, clauses: Clauses) -> bool:
+    def _davis_putnam_algorithm(self, clauses: Clauses,
+                                backtrack: Optional[Set[int]] = None)\
+            -> Optional[Clauses]:
         """Return True if the clauses are solvable."""
-        # remaining_clauses = copy(clauses)
+        if backtrack is None:
+            backtrack = set()
+
         if clauses.is_consistant_set_of_literals():
-            return True
+            return clauses
         if clauses.contains_empty_clause():
-            return False
+            return None
         mono_literals: FrozenSet[int] = clauses.find_mono_literals()
         while mono_literals:
-            clauses = self._unit_propagate(clauses, next(iter(mono_literals)))
+            mono_literal = next(iter(mono_literals))
+            backtrack.add(mono_literal)
+            clauses = clauses.unit_propagate(mono_literal)
             mono_literals = clauses.find_mono_literals()
 
-        pure_literals = self._find_pure_literals(clauses)
+        pure_literals = clauses.find_pure_literals()
+        while pure_literals:
+            pure_literal = next(iter(pure_literals))
+            backtrack.add(pure_literal)
+            clauses = clauses.assign_pure_literal(pure_literal)
+            pure_literals = clauses.find_pure_literals()
 
-        return False
-
-    @staticmethod
-    def _find_pure_literals(clauses: Clauses) -> Set[int]:
-        literals_set = {
-            literal for clause in clauses.clauses for literal in clause
-        }
-        return {literal for literal in literals_set
-                if -literal not in literals_set}
+        propositions = list(chain.from_iterable(clauses.clauses))
+        if not propositions and backtrack:
+            return Clauses(frozenset(
+                {frozenset({proposition}) for proposition in backtrack}
+            ))
+            # raise ValueError("No clauses are left in the formula")
+        next_literal = random.choice(propositions)
+        positive = clauses.add_clause_to_copy(frozenset({next_literal}))
+        negative = clauses.add_clause_to_copy(frozenset({-next_literal}))
+        return (self._davis_putnam_algorithm(positive, backtrack)
+                or self._davis_putnam_algorithm(negative, backtrack))
 
     @staticmethod
     def _get_clauses_from_file(filename: str) -> Clauses:
         with open(filename) as f:
-            clauses = frozenset(frozenset(LogicParser(line).clause) for line in f)
+            clauses = frozenset(frozenset(LogicParser(line).clause)
+                                for line in f if line[0] != "#")
         return Clauses.from_int(clauses)
 
 

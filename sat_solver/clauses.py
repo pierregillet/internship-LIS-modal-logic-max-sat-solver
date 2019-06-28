@@ -23,16 +23,30 @@ class Clauses:
         """Return true if the argument is a mono-literal."""
         return len(clause) == 1
 
-    def _unit_propagate(self, mono_literal: int) -> Clauses:
-        clauses: List[List[int]] = list(map(list, self.clauses))
+    def add_clause_to_copy(self, clause: FrozenSet[int]) -> Clauses:
+        """Return a new instance of Clauses with the parameter added."""
+        clauses: List[FrozenSet[int]] = list(self.clauses)
+        clauses.append(clause)
+        return Clauses.from_int(frozenset(clauses))
 
-        for clause in clauses:
+    def unit_propagate(self, mono_literal: int) -> Clauses:
+        clauses: List[List[int]] = list(map(list, self.clauses))
+        for clause in clauses[:]:
             if mono_literal in clause:
                 clauses.remove(clause)
             elif -mono_literal in clause:
                 clause.remove(-mono_literal)
-
         return Clauses(frozenset(map(frozenset, clauses)))
+
+    def find_pure_literals(self) -> Set[int]:
+        literals_set = set(chain.from_iterable(self.clauses))
+        return {literal for literal in literals_set
+                if -literal not in literals_set}
+
+    def assign_pure_literal(self, pure_literal: int) -> Clauses:
+        clauses = list(filter(lambda x: pure_literal not in x, self.clauses))
+        clauses = frozenset(map(frozenset, clauses))
+        return Clauses(clauses)
 
     def contains_only_mono_literals(self) -> bool:
         """Return True if the list contains only mono-literals."""

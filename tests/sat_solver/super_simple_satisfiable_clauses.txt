@@ -1,5 +1,11 @@
 # This is a comment, it is ignored.
--a|-b
-b|c
--c|a
-a|-b|c
+a|b
+a|c
+d|e
+d|f
+g|h
+-g|i
+-g|j
+#a
+e
+g
