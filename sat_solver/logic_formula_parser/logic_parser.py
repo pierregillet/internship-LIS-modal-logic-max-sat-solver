@@ -77,12 +77,20 @@ class LogicParser:
         return output
 
     def _get_operator_weight(self, operator: str) -> int:
+        """Return the weight (priority) of the operator.
+
+        If the operator is unknown, raises a ValueError exception.
+        """
         for weight, operators_set in enumerate(self.operators_by_precedence):
             if operator in operators_set:
                 return weight
         raise ValueError(f"Operator {operator} unknown")
 
     def _is_syntactically_correct(self, formula: str) -> bool:
+        """Return True if the formula is syntactically correct.
+
+        If the operator is unknown, raises a ValueError exception.
+        """
         if (len(formula) < 1
                 or len(formula.replace(" ", "")) == 0
                 or not self._are_parenthesis_consistent(formula)):
@@ -97,9 +105,17 @@ class LogicParser:
 
     @staticmethod
     def _is_operand(char: str) -> bool:
+        """Return True of the string passed as parameter is an operand.
+
+        An operand is an alpha character.
+        """
         return char.isalpha()
 
     def _is_operator(self, char: str) -> bool:
+        """Return True of the string passed as parameter is an operator.
+
+        Operators are compared to a list stored as an attribute.
+        """
         for operators in self.operators_by_precedence:
             if char in operators:
                 return True
@@ -107,6 +123,13 @@ class LogicParser:
 
     @staticmethod
     def _are_parenthesis_consistent(formula: str) -> bool:
+        """Return True if the parenthesis are consistent.
+
+        Parenthesis are considered consistent iff :
+        - there is an equal number of opening and closing parenthesis ;
+        - there isn't a closing parenthesis before a corresponding opening
+          parenthesis.
+        """
         left_parenthesis: int = 0
         right_parenthesis: int = 0
         for char in formula:
@@ -122,6 +145,11 @@ class LogicParser:
             return True
 
     def _format(self, formula: str) -> str:
+        """
+
+        :param formula:
+        :return:
+        """
         new_formula: str = formula[::].strip("\n")
         for key, value in self.formatting_substitutions.items():
             new_formula = new_formula.replace(key, value)

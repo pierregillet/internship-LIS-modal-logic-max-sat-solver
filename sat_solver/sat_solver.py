@@ -20,20 +20,23 @@ class SatSolver:
 
     @classmethod
     def from_file(cls, filename: str):
-        """Read the clauses from a file."""
+        """Create solver with the clauses from the file."""
         with open(filename) as f:
             clauses = frozenset(frozenset(LogicParser(line).clause)
                                 for line in f if line[0] != "#")
         return cls(Clauses.from_int(clauses))
 
     def solve(self) -> Optional[Clauses]:
-        """Return True if the the clauses stored as attribute are solvable."""
+        """Return the solution if the formula is solvable."""
         return self._davis_putnam_algorithm(self.clauses)
 
     def _davis_putnam_algorithm(self, clauses: Clauses,
                                 backtrack: Optional[Set[int]] = None)\
             -> Optional[Clauses]:
-        """Return True if the clauses are solvable."""
+        """Return True if the clauses are solvable.
+
+        Uses the DPLL algorithm to solve the formula under clausal form.
+        """
         if backtrack is None:
             backtrack = set()
 
@@ -60,19 +63,11 @@ class SatSolver:
             return Clauses(frozenset(
                 {frozenset({proposition}) for proposition in backtrack}
             ))
-            # raise ValueError("No clauses are left in the formula")
         next_literal = random.choice(propositions)
         positive = clauses.add_clause_to_copy(frozenset({next_literal}))
         negative = clauses.add_clause_to_copy(frozenset({-next_literal}))
         return (self._davis_putnam_algorithm(positive, backtrack)
                 or self._davis_putnam_algorithm(negative, backtrack))
-
-    @staticmethod
-    def _get_clauses_from_file(filename: str) -> Clauses:
-        with open(filename) as f:
-            clauses = frozenset(frozenset(LogicParser(line).clause)
-                                for line in f if line[0] != "#")
-        return Clauses.from_int(clauses)
 
 
 if __name__ == "__main__":
