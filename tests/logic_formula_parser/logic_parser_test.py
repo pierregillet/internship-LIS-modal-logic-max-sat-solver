@@ -1,6 +1,6 @@
 import pytest
 
-from sat_solver.logic_formula_parser.logic_parser\
+from logic_parser \
     import LogicParser, OPERATORS_BY_PRECEDENCE
 
 

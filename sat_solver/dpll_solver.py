@@ -9,8 +9,8 @@ import random
 from itertools import chain
 from typing import *
 
-from .logic_formula_parser.logic_parser import LogicParser
-from .clauses import Clauses
+from logic_parser import LogicParser
+from clauses import Clauses
 
 
 class SatSolver:
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     )
     sat_solver.solve()
     logicParser = LogicParser(input("Please type in the formula : \n"))
-    print(f"{logicParser.formula} => {logicParser.postfix_formula}")
+    print(f"{logicParser.formatted_formula} => {logicParser.postfix_formula}")

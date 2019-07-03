@@ -23,7 +23,7 @@ class LogicParser:
                  operators_by_precedence: Tuple[FrozenSet[str], ...] = None):
         self.formatting_substitutions: Dict[str, str]
         self.operators_by_precedence: Tuple[FrozenSet[str], ...]
-        self._formula: str
+        self._formatted_formula: str
 
         self.formatting_substitutions = (
             FORMATTING_SUBSTITUTIONS if formatting_substitutions is None
@@ -37,13 +37,11 @@ class LogicParser:
         if len(formula) < 1:
             raise ValueError(f"Formula {formula} too short")
 
-        formatted_formula: str = self._format(formula)
-
-        if not self._is_syntactically_correct(formatted_formula):
+        self._formatted_formula = self._format(formula)
+        if not self._is_syntactically_correct(self.formatted_formula):
             raise ValueError(
-                f"Formula {formatted_formula} syntactically incorrect"
+                f"Formula {self.formatted_formula} syntactically incorrect"
             )
-        self._formula: str = formatted_formula
 
     def _split_formula_postfix(self) -> Tuple[str]:
         """Splits the formula to a list of postfixed operands and operators.
@@ -51,8 +49,8 @@ class LogicParser:
         Expects the formula to be syntactically correct and to start and end
         with parenthesis."""
         output: Tuple[str] = tuple()
-        stack: List[str] = [self.formula[0]]
-        iterator: Iterator[str] = iter(self.formula[1::])
+        stack: List[str] = [self.formatted_formula[0]]
+        iterator: Iterator[str] = iter(self.formatted_formula[1::])
         for char in iterator:  # type: str
             if self._is_operand(char):
                 output += tuple([char])
@@ -145,10 +143,11 @@ class LogicParser:
             return True
 
     def _format(self, formula: str) -> str:
-        """
+        """Format the formula for further processing.
 
-        :param formula:
-        :return:
+        Remove the newline characters, replace composite operators passed as
+        input with their unicode character, surround the formula with
+        parenthesis if it isn't already the case.
         """
         new_formula: str = formula[::].strip("\n")
         for key, value in self.formatting_substitutions.items():
@@ -158,8 +157,8 @@ class LogicParser:
         return new_formula
 
     @property
-    def formula(self) -> str:
-        return self._formula
+    def formatted_formula(self) -> str:
+        return self._formatted_formula
 
     @property
     def postfix_formula(self) -> Tuple[str]:
@@ -167,8 +166,6 @@ class LogicParser:
 
     @property
     def clause(self) -> FrozenSet[int]:
-        # return frozenset(operand for operand in self._split_formula_postfix()
-        #                  if self._is_operand(operand) or operand == "¬")
         return self.as_integers(self.postfix_formula)
 
     @staticmethod
@@ -192,5 +189,5 @@ class LogicParser:
 if __name__ == "__main__":
     while True:
         logicParser = LogicParser(input("Please type in the formula : \n"))
-        print(logicParser.formula)
+        print(logicParser.formatted_formula)
         print(logicParser.postfix_formula)

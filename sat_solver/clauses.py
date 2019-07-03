@@ -84,13 +84,16 @@ class Clauses:
         A consistent set of literals is a set that doesn't contain a literal
         and its contrary.
         """
-        flat_set = frozenset(chain.from_iterable(self.clauses))
+        flat_set = self.get_distinct_propositions()
         inconsistencies = frozenset(filter(lambda x: -x in flat_set, flat_set))
         return False if inconsistencies else True
 
     def contains_empty_clause(self):
         """Return True if the list contains an empty clause."""
         return bool(list(filter(lambda x: not x, self.clauses)))
+
+    def get_distinct_propositions(self) -> FrozenSet[int]:
+        return frozenset(chain.from_iterable(self.clauses))
 
     @property
     def clauses(self):

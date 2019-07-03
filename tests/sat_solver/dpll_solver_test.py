@@ -1,8 +1,6 @@
 import pathlib
-import pytest
 
-from sat_solver.clauses import Clauses
-from sat_solver.sat_solver import SatSolver
+from dpll_solver import SatSolver
 
 
 class TestSatSolver:
