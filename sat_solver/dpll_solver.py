@@ -15,6 +15,7 @@ from clauses import Clauses
 
 class SatSolver:
     """SAT Solver using the DPLL algorithm."""
+
     def __init__(self, clauses: Clauses) -> None:
         self.clauses = clauses
 
@@ -22,16 +23,16 @@ class SatSolver:
     def from_file(cls, filename: str):
         """Create solver with the clauses from the file."""
         with open(filename) as f:
-            clauses = frozenset(frozenset(LogicParser(line).clause)
-                                for line in f if line[0] != "#")
-        return cls(Clauses.from_int(clauses))
+            clauses = tuple(tuple(LogicParser(line).postfix_formula)
+                            for line in f if line[0] != "#")
+        return cls(Clauses.from_str(clauses))
 
     def solve(self) -> Optional[Clauses]:
         """Return the solution if the formula is solvable."""
         return self._davis_putnam_algorithm(self.clauses)
 
     def _davis_putnam_algorithm(self, clauses: Clauses,
-                                backtrack: Optional[Set[int]] = None)\
+                                backtrack: Optional[Set[int]] = None) \
             -> Optional[Clauses]:
         """Return True if the clauses are solvable.
 

@@ -11,16 +11,59 @@ from typing import *
 class Clauses:
     """Class containing a set of clauses in conjunctive normal form."""
 
-    def __init__(self, clauses: FrozenSet[FrozenSet[int]]) -> None:
+    def __init__(self, clauses: FrozenSet[FrozenSet[int]],
+                 literals_substitution: Dict[str, int] = None) -> None:
         """Construct an object from clauses with literals as integers."""
         self._clauses: FrozenSet[FrozenSet[int]] = clauses
+        self.translation: Dict[str, int] = literals_substitution
 
     @classmethod
-    def from_int(cls, clauses: FrozenSet[FrozenSet[int]]):
+    def from_int(cls, clauses: FrozenSet[FrozenSet[int]],
+                 translation: Dict[str, int] = None) -> Clauses:
         """Return an instance of this class from clauses with literals
         as integers.
         """
-        return cls(clauses)
+        return cls(clauses, translation)
+
+    @classmethod
+    def from_str(cls, clauses: Tuple[Tuple[str, ...], ...]) -> Clauses:
+        """Return an instance of this class from clauses with literals
+        as strings. They will be replaced with integers.
+
+        Replace literals in the formula with an integer greater than 2 (to
+        keep 0 for False and 1 for True).
+        If the literal is negative, the integer takes a negative value.
+        """
+        _OFFSET = 2  # Offset to avoid adding 0 and 1 to the translation table.
+        translation: Dict[str, int] = {}
+        unique_propositions = tuple(chain.from_iterable(clauses))
+        for index, value in enumerate(unique_propositions):
+            translation[value] = index + _OFFSET
+        clauses_as_int = frozenset(Clauses.str_to_int(clause, translation)
+                                   for clause in clauses)
+
+        return cls(clauses_as_int, translation)
+
+    @staticmethod
+    def str_to_int(clause: Tuple[str, ...], translation: Dict[str, int])\
+            -> FrozenSet[int]:
+        """Replace literals in the formula with an integer corresponding
+        to its position + 1 in the alphabet. If the literal is negative,
+        the integer takes a negative value.
+
+        1 is added to avoid the case of 0, which is problematic to work with
+        (-0 is the same as +0, and the sign will disappear).
+        """
+        output: List[int] = []
+        for operand in clause:
+            if operand.isalpha():
+                if operand not in translation:
+                    raise ValueError(f"{operand} was not found"
+                                     f" in the translation table.")
+                output.append(translation[operand])
+            elif operand == "¬":
+                output[-1] *= -1
+        return frozenset(output)
 
     @staticmethod
     def is_mono_literal(clause: FrozenSet[int]) -> bool:
@@ -36,7 +79,8 @@ class Clauses:
     def unit_propagate(self, mono_literal: int) -> Clauses:
         """Propagates the mono-literal in the whole formula.
 
-        Unit propagation consists in
+        Remove all the clauses containing the mono-literal, and remove the
+        negative value of the mono-literal from the clauses containing it.
         """
         clauses: List[List[int]] = list(map(list, self.clauses))
         for clause in clauses[:]:

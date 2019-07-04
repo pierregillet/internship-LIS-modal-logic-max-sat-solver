@@ -164,27 +164,6 @@ class LogicParser:
     def postfix_formula(self) -> Tuple[str]:
         return self._split_formula_postfix()
 
-    @property
-    def clause(self) -> FrozenSet[int]:
-        return self.as_integers(self.postfix_formula)
-
-    @staticmethod
-    def as_integers(clause: Tuple[str, ...]) -> FrozenSet[int]:
-        """ Replace literals in each clause with an integer corresponding
-        to its position + 1 in the alphabet. If the literal is negative,
-        the integer takes a negative value.
-
-        1 is added to avoid the case of 0, which is problematic to work with
-        (-0 is the same as +0, and the sign will disappear).
-        """
-        output: List[int] = []
-        for char in clause:
-            if char.isalpha():
-                output.append(string.ascii_letters.index(char) + 1)
-            elif char == "¬":
-                output[-1] *= -1
-        return frozenset(output)
-
 
 if __name__ == "__main__":
     while True:
