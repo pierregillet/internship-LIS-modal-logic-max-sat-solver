@@ -1,7 +1,7 @@
 from typing import *
 import pytest
 
-from clauses import Clauses
+from sat_solver.clauses import Clauses
 
 
 class TestClauses:

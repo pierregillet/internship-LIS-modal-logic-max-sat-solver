@@ -12,10 +12,10 @@ class Clauses:
     """Class containing a set of clauses in conjunctive normal form."""
 
     def __init__(self, clauses: FrozenSet[FrozenSet[int]],
-                 literals_substitution: Dict[str, int] = None) -> None:
+                 translation: Dict[str, int] = None):
         """Construct an object from clauses with literals as integers."""
         self._clauses: FrozenSet[FrozenSet[int]] = clauses
-        self.translation: Dict[str, int] = literals_substitution
+        self._translation: Dict[str, int] = translation
 
     @classmethod
     def from_int(cls, clauses: FrozenSet[FrozenSet[int]],
@@ -36,7 +36,7 @@ class Clauses:
         """
         _OFFSET = 2  # Offset to avoid adding 0 and 1 to the translation table.
         translation: Dict[str, int] = {}
-        unique_propositions = tuple(chain.from_iterable(clauses))
+        unique_propositions = Clauses.get_distinct_propositions(clauses)
         for index, value in enumerate(unique_propositions):
             translation[value] = index + _OFFSET
         clauses_as_int = frozenset(Clauses.str_to_int(clause, translation)
@@ -56,14 +56,24 @@ class Clauses:
         """
         output: List[int] = []
         for operand in clause:
-            if operand.isalpha():
+            if operand == "¬":
+                output[-1] *= -1
+            else:
                 if operand not in translation:
                     raise ValueError(f"{operand} was not found"
                                      f" in the translation table.")
                 output.append(translation[operand])
-            elif operand == "¬":
-                output[-1] *= -1
         return frozenset(output)
+
+    @staticmethod
+    def is_clausal_form(formula: Tuple[str, ...]) -> bool:
+        for element in formula:
+            if not element.isalpha() and element not in ["∧", "∨"]:
+                return False
+        return True
+
+    def split_to_clauses(self):
+        pass
 
     @staticmethod
     def is_mono_literal(clause: FrozenSet[int]) -> bool:
@@ -74,7 +84,7 @@ class Clauses:
         """Return a new instance of Clauses with the parameter added."""
         clauses: List[FrozenSet[int]] = list(self.clauses)
         clauses.append(clause)
-        return Clauses.from_int(frozenset(clauses))
+        return Clauses.from_int(frozenset(clauses), self.translation)
 
     def unit_propagate(self, mono_literal: int) -> Clauses:
         """Propagates the mono-literal in the whole formula.
@@ -88,7 +98,7 @@ class Clauses:
                 clauses.remove(clause)
             elif -mono_literal in clause:
                 clause.remove(-mono_literal)
-        return Clauses(frozenset(map(frozenset, clauses)))
+        return Clauses(frozenset(map(frozenset, clauses)), self.translation)
 
     def find_pure_literals(self) -> Set[int]:
         """Return a set containing every pure literal in the formula.
@@ -107,7 +117,7 @@ class Clauses:
         """
         clauses = list(filter(lambda x: pure_literal not in x, self.clauses))
         clauses = frozenset(map(frozenset, clauses))
-        return Clauses(clauses)
+        return Clauses(clauses, self.translation)
 
     def contains_only_mono_literals(self) -> bool:
         """Return True if the list contains only mono-literals."""
@@ -128,7 +138,7 @@ class Clauses:
         A consistent set of literals is a set that doesn't contain a literal
         and its contrary.
         """
-        flat_set = self.get_distinct_propositions()
+        flat_set = self.get_distinct_propositions(self.clauses)
         inconsistencies = frozenset(filter(lambda x: -x in flat_set, flat_set))
         return False if inconsistencies else True
 
@@ -136,9 +146,30 @@ class Clauses:
         """Return True if the list contains an empty clause."""
         return bool(list(filter(lambda x: not x, self.clauses)))
 
-    def get_distinct_propositions(self) -> FrozenSet[int]:
-        return frozenset(chain.from_iterable(self.clauses))
+    @staticmethod
+    def get_distinct_propositions(clauses: Collection) -> frozenset:
+        propositions = filter(lambda x: x != "¬", chain.from_iterable(clauses))
+        return frozenset(propositions)
+
+    # def get_distinct_int_propositions(self) -> FrozenSet[int]:
+    #     return frozenset(chain.from_iterable(self.clauses))
 
     @property
     def clauses(self):
         return self._clauses
+
+    @property
+    def translation(self):
+        return self._translation
+
+    @property
+    def literal_clauses(self):
+        output = set()
+        for clause in self.clauses:
+            current_clause = set()
+            for proposition in clause:
+                for key, value in self._translation.items():
+                    if value == proposition:
+                        current_clause.add(key)
+            output.add(frozenset(current_clause))
+        return frozenset(output)

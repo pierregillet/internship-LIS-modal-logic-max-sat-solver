@@ -1,7 +1,7 @@
 from typing import *
 
 from clauses import Clauses
-from dpll_solver import SatSolver
+from dpll_solver import DpllSatSolver
 
 
 class MaxSatSolver:

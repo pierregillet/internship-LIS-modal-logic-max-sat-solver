@@ -1,16 +1,19 @@
 import pathlib
+import pytest
 
-from dpll_solver import SatSolver
+from sat_solver.dpll_solver import DpllSatSolver
 
 
-class TestSatSolver:
+class TestDpllSatSolver:
+    # @pytest.mark.skip(reason="Not yet implemented")
     def test_solve(self):
-        solver = SatSolver.from_file(
+        solver = DpllSatSolver.from_file(
             f"{pathlib.Path(__file__).parent}/super_simple_satisfiable_clauses.txt"
         )
         assert len(solver.solve().clauses) > 1
 
-        solver = SatSolver.from_file(
+        solver = DpllSatSolver.from_file(
             f"{pathlib.Path(__file__).parent}/satisfiable_clauses.txt"
         )
-        assert len(solver.solve().clauses) > 1
+        a = solver.solve()
+        assert len(a.clauses) > 1

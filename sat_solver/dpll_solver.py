@@ -9,11 +9,11 @@ import random
 from itertools import chain
 from typing import *
 
-from logic_parser import LogicParser
-from clauses import Clauses
+from logic_formula_parser import logic_parser
+from sat_solver.clauses import Clauses
 
 
-class SatSolver:
+class DpllSatSolver:
     """SAT Solver using the DPLL algorithm."""
 
     def __init__(self, clauses: Clauses) -> None:
@@ -22,8 +22,9 @@ class SatSolver:
     @classmethod
     def from_file(cls, filename: str):
         """Create solver with the clauses from the file."""
+        logic_parser.yield_parsed_formulas_from_file(filename)
         with open(filename) as f:
-            clauses = tuple(tuple(LogicParser(line).postfix_formula)
+            clauses = tuple(tuple(logic_parser.parse_formula(line))
                             for line in f if line[0] != "#")
         return cls(Clauses.from_str(clauses))
 
@@ -63,7 +64,7 @@ class SatSolver:
         if not propositions and backtrack:
             return Clauses(frozenset(
                 {frozenset({proposition}) for proposition in backtrack}
-            ))
+            ), clauses.translation)
         next_literal = random.choice(propositions)
         positive = clauses.add_clause_to_copy(frozenset({next_literal}))
         negative = clauses.add_clause_to_copy(frozenset({-next_literal}))
@@ -72,10 +73,16 @@ class SatSolver:
 
 
 if __name__ == "__main__":
-    sat_solver = SatSolver.from_file(
+    sat_solver = DpllSatSolver.from_file(
         f"{pathlib.Path(__file__).parent.parent}"
         "/tests/sat_solver/satisfiable_clauses.txt"
     )
-    sat_solver.solve()
-    logicParser = LogicParser(input("Please type in the formula : \n"))
-    print(f"{logicParser.formatted_formula} => {logicParser.postfix_formula}")
+    solution = sat_solver.solve()
+    if solution:
+        print(solution.clauses)
+        print(solution.literal_clauses)
+    else:
+        print("No solution.")
+
+    # formula = input("Please type in the formula : \n")
+    # print(f"Parsed formula : '{logic_parser.parse_formula(formula)}'")
