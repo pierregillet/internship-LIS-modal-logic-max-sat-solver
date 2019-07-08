@@ -7,18 +7,26 @@ from __future__ import annotations
 from itertools import chain
 from typing import *
 
+from logic_formula_parser import logic_parser
+
 
 class Clauses:
     """Class containing a set of clauses in conjunctive normal form."""
 
-    def __init__(self, clauses: FrozenSet[FrozenSet[int]],
+    def __init__(self, clauses: List[Set[int]],
                  translation: Dict[str, int] = None):
-        """Construct an object from clauses with literals as integers."""
-        self._clauses: FrozenSet[FrozenSet[int]] = clauses
+        """Construct an object from clauses with propositions as integers.
+        Each clause must be its own list element (they must already be split).
+        """
+        self._clauses: List[Set[int]] = clauses
         self._translation: Dict[str, int] = translation
 
+    def __copy__(self):
+        """Create a shallow copy."""
+        return Clauses(self._clauses[:], self.translation.copy())
+
     @classmethod
-    def from_int(cls, clauses: FrozenSet[FrozenSet[int]],
+    def from_int(cls, clauses: List[Set[int]],
                  translation: Dict[str, int] = None) -> Clauses:
         """Return an instance of this class from clauses with literals
         as integers.
@@ -26,27 +34,29 @@ class Clauses:
         return cls(clauses, translation)
 
     @classmethod
-    def from_str(cls, clauses: Tuple[Tuple[str, ...], ...]) -> Clauses:
-        """Return an instance of this class from clauses with literals
+    def from_str(cls, clauses: List[List[str]]) -> Clauses:
+        """Create an instance of this class from clauses with propositions
         as strings. They will be replaced with integers.
 
         Replace literals in the formula with an integer greater than 2 (to
         keep 0 for False and 1 for True).
         If the literal is negative, the integer takes a negative value.
         """
+        for clause in clauses:
+            if not Clauses.is_clausal_form(clause):
+                raise ValueError(f"{clauses} is not a proper clause")
         _OFFSET = 2  # Offset to avoid adding 0 and 1 to the translation table.
         translation: Dict[str, int] = {}
         unique_propositions = Clauses.get_distinct_propositions(clauses)
         for index, value in enumerate(unique_propositions):
             translation[value] = index + _OFFSET
-        clauses_as_int = frozenset(Clauses.str_to_int(clause, translation)
-                                   for clause in clauses)
-
+        clauses_as_int = [Clauses.str_to_int(clause, translation)
+                          for clause in clauses]
         return cls(clauses_as_int, translation)
 
     @staticmethod
-    def str_to_int(clause: Tuple[str, ...], translation: Dict[str, int])\
-            -> FrozenSet[int]:
+    def str_to_int(clause: List[str], translation: Dict[str, int]) \
+            -> Set[int]:
         """Replace literals in the formula with an integer corresponding
         to its position + 1 in the alphabet. If the literal is negative,
         the integer takes a negative value.
@@ -55,50 +65,50 @@ class Clauses:
         (-0 is the same as +0, and the sign will disappear).
         """
         output: List[int] = []
-        for operand in clause:
-            if operand == "¬":
+        for element in clause:
+            if element == "¬":
                 output[-1] *= -1
+            elif element == "∨":
+                continue
             else:
-                if operand not in translation:
-                    raise ValueError(f"{operand} was not found"
+                if element not in translation:
+                    raise ValueError(f"{element} was not found"
                                      f" in the translation table.")
-                output.append(translation[operand])
-        return frozenset(output)
+                output.append(translation[element])
+        return set(output)
 
     @staticmethod
-    def is_clausal_form(formula: Tuple[str, ...]) -> bool:
+    def is_clausal_form(formula: List[str]) -> bool:
         for element in formula:
-            if not element.isalpha() and element not in ["∧", "∨"]:
+            if len(element) == 0:
+                raise ValueError(f"Empty clause encountered.")
+            if not element[0].isalpha() and element not in ["∨", "¬"]:
                 return False
         return True
 
-    def split_to_clauses(self):
-        pass
-
     @staticmethod
-    def is_mono_literal(clause: FrozenSet[int]) -> bool:
+    def is_mono_literal(clause: Set[int]) -> bool:
         """Return true if the argument is a mono-literal."""
         return len(clause) == 1
 
-    def add_clause_to_copy(self, clause: FrozenSet[int]) -> Clauses:
-        """Return a new instance of Clauses with the parameter added."""
-        clauses: List[FrozenSet[int]] = list(self.clauses)
-        clauses.append(clause)
-        return Clauses.from_int(frozenset(clauses), self.translation)
+    def add_clause(self, clause: Set[int]) -> None:
+        """Append the clause to the _clauses attribute."""
+        self._clauses.append(clause)
 
-    def unit_propagate(self, mono_literal: int) -> Clauses:
+    def unit_propagate(self, mono_literal: int) -> None:
         """Propagates the mono-literal in the whole formula.
 
         Remove all the clauses containing the mono-literal, and remove the
         negative value of the mono-literal from the clauses containing it.
         """
-        clauses: List[List[int]] = list(map(list, self.clauses))
-        for clause in clauses[:]:
+        for clause in self._clauses[:]:
             if mono_literal in clause:
-                clauses.remove(clause)
+                self._clauses.remove(clause)
             elif -mono_literal in clause:
-                clause.remove(-mono_literal)
-        return Clauses(frozenset(map(frozenset, clauses)), self.translation)
+                tmp = set(clause)
+                tmp.remove(-mono_literal)
+                self._clauses.remove(clause)
+                self._clauses.append(tmp)
 
     def find_pure_literals(self) -> Set[int]:
         """Return a set containing every pure literal in the formula.
@@ -106,30 +116,31 @@ class Clauses:
         A pure literal is a literal whose contrary doesn't exist
         in the formula.
         """
-        literals_set = set(chain.from_iterable(self.clauses))
+        literals_set = set(chain.from_iterable(self._clauses))
         return {literal for literal in literals_set
                 if -literal not in literals_set}
 
-    def assign_pure_literal(self, pure_literal: int) -> Clauses:
+    def assign_pure_literal(self, pure_literal: int) -> None:
         """Assign the pure literal passed as parameter.
 
         The returned object only contains clauses without the pure literal.
         """
-        clauses = list(filter(lambda x: pure_literal not in x, self.clauses))
-        clauses = frozenset(map(frozenset, clauses))
-        return Clauses(clauses, self.translation)
+
+        def filter_function(x): return pure_literal not in x
+
+        self._clauses = list(filter(filter_function, self._clauses))
 
     def contains_only_mono_literals(self) -> bool:
         """Return True if the list contains only mono-literals."""
-        multi_literals = filter(
-            lambda x: not self.is_mono_literal(x), self.clauses
-        )
+        multi_literals = list(filter(
+            lambda x: not self.is_mono_literal(x), self._clauses
+        ))
         return True if not multi_literals else False
 
-    def find_mono_literals(self) -> FrozenSet[int]:
-        """Return a FrozenSet containing every mono-literal."""
-        return frozenset(chain.from_iterable(
-            filter(lambda x: self.is_mono_literal(x), self.clauses)
+    def find_mono_literals(self) -> Set[int]:
+        """Return a Set containing every mono-literal."""
+        return set(chain.from_iterable(
+            filter(self.is_mono_literal, self._clauses)
         ))
 
     def is_consistant_set_of_literals(self) -> bool:
@@ -138,21 +149,18 @@ class Clauses:
         A consistent set of literals is a set that doesn't contain a literal
         and its contrary.
         """
-        flat_set = self.get_distinct_propositions(self.clauses)
-        inconsistencies = frozenset(filter(lambda x: -x in flat_set, flat_set))
+        flat_set = self.get_distinct_propositions(self._clauses)
+        inconsistencies = {filter(lambda x: -x in flat_set, flat_set)}
         return False if inconsistencies else True
 
     def contains_empty_clause(self):
         """Return True if the list contains an empty clause."""
-        return bool(list(filter(lambda x: not x, self.clauses)))
+        return bool(list(filter(lambda x: not x, self._clauses)))
 
     @staticmethod
-    def get_distinct_propositions(clauses: Collection) -> frozenset:
-        propositions = filter(lambda x: x != "¬", chain.from_iterable(clauses))
-        return frozenset(propositions)
-
-    # def get_distinct_int_propositions(self) -> FrozenSet[int]:
-    #     return frozenset(chain.from_iterable(self.clauses))
+    def get_distinct_propositions(clauses: Collection) -> set:
+        return set(filter(lambda x: not logic_parser.is_operator(x),
+                          chain.from_iterable(clauses)))
 
     @property
     def clauses(self):
@@ -164,12 +172,12 @@ class Clauses:
 
     @property
     def literal_clauses(self):
-        output = set()
-        for clause in self.clauses:
+        output = []
+        for clause in self._clauses:
             current_clause = set()
             for proposition in clause:
                 for key, value in self._translation.items():
                     if value == proposition:
                         current_clause.add(key)
-            output.add(frozenset(current_clause))
-        return frozenset(output)
+            output.append(current_clause)
+        return output

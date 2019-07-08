@@ -18,7 +18,7 @@ OPERATORS_BY_PRECEDENCE: Tuple[FrozenSet[str], ...] = (
 
 
 def yield_parsed_formulas_from_file(filename: str) \
-        -> Generator[Tuple[str, ...], None, None]:
+        -> Generator[List[str], None, None]:
     """Parse and then yield each formula one by one from the file."""
     with open(filename) as f:
         for line in f:
@@ -26,7 +26,7 @@ def yield_parsed_formulas_from_file(filename: str) \
                 yield parse_formula(line)
 
 
-def parse_formula(formula: str) -> Tuple[str, ...]:
+def parse_formula(formula: str) -> List[str]:
     formatted_formula = _format(formula)
     if not _is_syntactically_correct(formatted_formula):
         raise ValueError(
@@ -52,17 +52,17 @@ def _format(formula: str) -> str:
     return new_formula
 
 
-def _split_formula_postfix(formula: str) -> Tuple[str]:
+def _split_formula_postfix(formula: str) -> List[str]:
     """Splits the formula to a list of postfixed operands and operators.
 
     Expects the formula to be syntactically correct and to start and end
     with parenthesis."""
-    output: Tuple[str] = tuple()
+    output: List[str] = []
     stack: List[str] = [formula[0]]
     iterator: Iterator[str] = iter(formula[1::])
     for char in iterator:  # type: str
         if is_operand(char):
-            output += tuple([char])
+            output.append(char)
         elif char == "(":
             stack.append(char)
         elif char == ")":
@@ -70,7 +70,7 @@ def _split_formula_postfix(formula: str) -> Tuple[str]:
                 element = stack.pop()
                 if element == "(":
                     break
-                output += tuple([element])
+                output.append(element)
         else:  # If an operator is encountered
             _get_operator_weight(char)
             operator_found = char
@@ -79,7 +79,7 @@ def _split_formula_postfix(formula: str) -> Tuple[str]:
                     break
                 elif (_get_operator_weight(operator)
                       <= _get_operator_weight(operator_found)):
-                    output += tuple([stack.pop()])
+                    output.append(stack.pop())
             stack.append(operator_found)
     return output
 
@@ -153,11 +153,6 @@ def are_parenthesis_consistent(formula: str) -> bool:
         return False
     else:
         return True
-
-
-def get_distinct_propositions(formula: Tuple[Tuple[str, ...], ...])\
-        -> FrozenSet[str]:
-    return frozenset(chain.from_iterable(formula))
 
 
 if __name__ == "__main__":
