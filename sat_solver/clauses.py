@@ -179,5 +179,7 @@ class Clauses:
                 for key, value in self._translation.items():
                     if value == proposition:
                         current_clause.add(key)
+                    elif -value == proposition:
+                        current_clause.add(f"¬{key}")
             output.append(current_clause)
         return output
