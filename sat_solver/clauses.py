@@ -45,14 +45,35 @@ class Clauses:
         for clause in clauses:
             if not Clauses.is_clausal_form(clause):
                 raise ValueError(f"{clauses} is not a proper clause")
+        # clauses += Clauses.generate_modal_axioms(clauses)
+        translation = Clauses._create_translation(clauses)
+        clauses_as_int = [Clauses.str_to_int(clause, translation)
+                          for clause in clauses]
+        return cls(clauses_as_int, translation)
+
+    @staticmethod
+    def _create_translation(clauses: Collection[Collection[str]])\
+            -> Dict[str, int]:
         _OFFSET = 2  # Offset to avoid adding 0 and 1 to the translation table.
         translation: Dict[str, int] = {}
         unique_propositions = Clauses.get_distinct_propositions(clauses)
         for index, value in enumerate(unique_propositions):
             translation[value] = index + _OFFSET
-        clauses_as_int = [Clauses.str_to_int(clause, translation)
-                          for clause in clauses]
-        return cls(clauses_as_int, translation)
+        return translation
+
+    @staticmethod
+    def generate_modal_axioms(clauses: List[List[str]]) \
+            -> List[List[str]]:
+        output: List[List[str]] = []
+        propositions = Clauses.get_distinct_propositions(clauses)
+        for f in propositions:
+            # ☐f→f <=> ¬☐f∨f
+            output.append([f, "☐", "¬", f])
+            # ☐f→¬◇¬f <=> ¬☐f∨¬◇¬f
+            output.append([f, "☐", "¬", f, "¬", "◇", "¬"])
+            # ☐f→◇f <=> ¬☐f∨◇f
+            output.append([f, "☐", "¬", f, "◇"])
+        return output
 
     @staticmethod
     def str_to_int(clause: List[str], translation: Dict[str, int]) \
@@ -62,7 +83,7 @@ class Clauses:
         the integer takes a negative value.
 
         1 is added to avoid the case of 0, which is problematic to work with
-        (-0 is the same as +0, and the sign will disappear).
+        (as -0 is the same as +0, and the sign will disappear).
         """
         output: List[int] = []
         for element in clause:
@@ -157,8 +178,10 @@ class Clauses:
         """Return True if the list contains an empty clause."""
         return bool(list(filter(lambda x: not x, self._clauses)))
 
+    T = TypeVar('T')
     @staticmethod
-    def get_distinct_propositions(clauses: Collection) -> set:
+    def get_distinct_propositions(clauses: Collection[Collection[T]])\
+            -> Set[T]:
         return set(filter(lambda x: not logic_parser.is_operator(x),
                           chain.from_iterable(clauses)))
 

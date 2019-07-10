@@ -15,5 +15,4 @@ class TestDpllSatSolver:
         solver = DpllSatSolver.from_file(
             f"{pathlib.Path(__file__).parent}/satisfiable_clauses.txt"
         )
-        a = solver.solve()
-        assert len(a.clauses) > 1
+        assert len(solver.solve().clauses) > 1
