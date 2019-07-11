@@ -1,5 +1,5 @@
-from itertools import chain
 from typing import *
+
 
 FORMATTING_SUBSTITUTIONS: Dict[str, str] = {
     "[]": "☐",
