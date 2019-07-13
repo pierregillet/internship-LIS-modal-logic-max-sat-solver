@@ -32,29 +32,34 @@ def p_formula_term(p):
     p[0] = p[1]
 
 
-def p_term_box_not(p):
-    'term : BOX NOT proposition'
-    p[0] = op.BoxNot(p[3])
-
-
-def p_term_diamond_not(p):
-    'term : DIAMOND NOT proposition'
-    p[0] = op.DiamondNot(p[2])
-
-
-def p_term_box(p):
-    'term : BOX proposition'
-    p[0] = op.Box(p[2])
-
-
-def p_term_diamond(p):
-    'term : DIAMOND proposition'
-    p[0] = op.Diamond(p[2])
+def p_term_not(p):
+    'term : NOT proposition'
+    p[0] = op.Not(p[2])
 
 
 def p_term_var(p):
     'term : proposition'
     p[0] = p[1]
+
+
+def p_proposition_box_not(p):
+    'proposition : BOX NOT PROPOSITION'
+    p[0] = op.BoxNot(p[3])
+
+
+def p_proposition_diamond_not(p):
+    'proposition : DIAMOND NOT PROPOSITION'
+    p[0] = op.DiamondNot(p[3])
+
+
+def p_proposition_box(p):
+    'proposition : BOX PROPOSITION'
+    p[0] = op.Box(p[2])
+
+
+def p_proposition_diamond(p):
+    'proposition : DIAMOND PROPOSITION'
+    p[0] = op.Diamond(p[2])
 
 
 def p_proposition_proposition(p):
@@ -70,8 +75,9 @@ def p_error(p):
 
 if __name__ == "__main__":
     # data = "a&b|c|-d&-[]e|-<>-a->b"
-    data = "a|[]-b"
-    lexer.input(data)
+    data = "-a|[]-b"
+    lexer.tokenize(data)
+    # lexer.input(data)
     # while True:
     #     tok = lexer.token()
     #     if not tok:

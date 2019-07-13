@@ -1,16 +1,3 @@
-# tokens = (
-#     "NOT",
-#     "BOX",
-#     "DIAMOND",
-#     "AND",
-#     "OR",
-#     "IMPLY",
-#     "LPAREN",
-#     "RPAREN",
-#     "PROPOSITION",
-# )
-
-
 class Proposition:
     def __init__(self, literal) -> None:
         self.literal = literal

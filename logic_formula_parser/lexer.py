@@ -35,15 +35,8 @@ def t_error(t):
     t.lexer.skip(1)
 
 
-# lexer = lex.lex(debug=1)
-lexer = lex.lex()
-
-if __name__ == "__main__":
-    # data = "a&b|(c|-d&-[]e|-<>-a->b)"
-    data = "a&b"
+def tokenize(data):
+    # lexer = lex.lex(debug=1)
+    lexer = lex.lex()
     lexer.input(data)
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break  # No more input
-        print(tok)
+    return [token for token in lexer]
