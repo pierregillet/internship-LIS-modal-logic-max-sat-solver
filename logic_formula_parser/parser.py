@@ -1,7 +1,7 @@
 from ply import yacc
 
 # Get the token map from the lexer.  This is required.
-from lexer import lexer, tokens
+import lexer
 import operators as op
 
 precedence = (
@@ -77,12 +77,6 @@ if __name__ == "__main__":
     # data = "a&b|c|-d&-[]e|-<>-a->b"
     data = "-a|[]-b"
     lexer.tokenize(data)
-    # lexer.input(data)
-    # while True:
-    #     tok = lexer.token()
-    #     if not tok:
-    #         break      # No more input
-    #     print(tok)
 
     yacc.yacc(write_tables=True, debug=True)
     parser = yacc.yacc()
