@@ -1,7 +1,7 @@
 from ply import yacc
 
 # Get the token map from the lexer.  This is required.
-import lexer
+from lexer import lexer, tokenize, tokens
 import operators as op
 
 precedence = (
@@ -44,22 +44,22 @@ def p_term_var(p):
 
 def p_proposition_box_not(p):
     'proposition : BOX NOT PROPOSITION'
-    p[0] = op.BoxNot(p[3])
+    p[0] = op.BoxNot(op.Proposition(p[3]))
 
 
 def p_proposition_diamond_not(p):
     'proposition : DIAMOND NOT PROPOSITION'
-    p[0] = op.DiamondNot(p[3])
+    p[0] = op.DiamondNot(op.Proposition(p[3]))
 
 
 def p_proposition_box(p):
     'proposition : BOX PROPOSITION'
-    p[0] = op.Box(p[2])
+    p[0] = op.Box(op.Proposition(p[2]))
 
 
 def p_proposition_diamond(p):
     'proposition : DIAMOND PROPOSITION'
-    p[0] = op.Diamond(p[2])
+    p[0] = op.Diamond(op.Proposition(p[2]))
 
 
 def p_proposition_proposition(p):
@@ -73,21 +73,25 @@ def p_error(p):
     print(p)
 
 
+def parse_file(filename: str):
+    with open(filename) as f:
+        for line in f:
+            tokenize(line)
+            parser = yacc.yacc()
+            parser.parse(line, lexer=lexer)
+    return
+
+
+def parse(data: str):
+    tokenize(data)
+
+    # yacc.yacc(write_tables=True, debug=True)
+    parser = yacc.yacc()
+    return parser.parse(data, lexer=lexer)
+
+
 if __name__ == "__main__":
     # data = "a&b|c|-d&-[]e|-<>-a->b"
     data = "-a|[]-b"
-    lexer.tokenize(data)
-
-    yacc.yacc(write_tables=True, debug=True)
-    parser = yacc.yacc()
-    result = parser.parse(data, lexer=lexer)
+    result = parse(data)
     print(result)
-
-    # while True:
-    #     try:
-    #         # s = input('calc > ')
-    #         s = input('calc > ')
-    #     except EOFError:
-    #         break
-    #     if not s:
-    #         continue

@@ -37,6 +37,10 @@ def t_error(t):
 
 def tokenize(data):
     # lexer = lex.lex(debug=1)
-    lexer = lex.lex()
+    # lexer = lex.lex()
     lexer.input(data)
     return [token for token in lexer]
+
+
+# lexer = lex.lex(debug=1)
+lexer = lex.lex()

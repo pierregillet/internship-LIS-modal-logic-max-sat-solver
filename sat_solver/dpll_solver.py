@@ -10,7 +10,8 @@ import random
 from itertools import chain
 from typing import *
 
-from logic_formula_parser import logic_parser
+# from logic_formula_parser import logic_parser
+from logic_formula_parser import parser
 from sat_solver.clauses import Clauses
 
 
@@ -23,10 +24,14 @@ class DpllSatSolver:
     @classmethod
     def from_file(cls, filename: str):
         """Create solver with the clauses from the file."""
-        logic_parser.yield_parsed_formulas_from_file(filename)
+        # logic_parser.yield_parsed_formulas_from_file(filename)
+        # with open(filename) as f:
+        #     clauses = [list(logic_parser.parse_formula(line))
+        #                for line in f if line[0] != "#"]
+        # return cls(Clauses.from_str(clauses))
+
         with open(filename) as f:
-            clauses = [list(logic_parser.parse_formula(line))
-                       for line in f if line[0] != "#"]
+            clauses = [parser.parse(line) for line in f]
         return cls(Clauses.from_str(clauses))
 
     def solve(self) -> Optional[Clauses]:
@@ -40,6 +45,7 @@ class DpllSatSolver:
 
         Uses the DPLL algorithm to solve the formula under clausal form.
         """
+        # TODO: Make recursion a terminal recursion (no context to remember)
         if backtrack is None:
             backtrack = set()
 
