@@ -3,14 +3,13 @@ SAT Solver reading clauses from file. It expects the clauses in conjunctive
 normal form.
 Based upon the DPLL algorithm.
 """
-
-from copy import copy
+import re
+from copy import copy, deepcopy
 import pathlib
 import random
 from itertools import chain
 from typing import *
 
-# from logic_formula_parser import logic_parser
 from logic_formula_parser import parser
 from sat_solver.clauses import Clauses
 
@@ -24,19 +23,20 @@ class DpllSatSolver:
     @classmethod
     def from_file(cls, filename: str):
         """Create solver with the clauses from the file."""
-        # logic_parser.yield_parsed_formulas_from_file(filename)
-        # with open(filename) as f:
-        #     clauses = [list(logic_parser.parse_formula(line))
-        #                for line in f if line[0] != "#"]
-        # return cls(Clauses.from_str(clauses))
-
+        clauses = []
         with open(filename) as f:
-            clauses = [parser.parse(line) for line in f]
-        return cls(Clauses.from_str(clauses))
+            for line in f:
+                stripped_line = line.strip()
+                if stripped_line is None or re.match(r'^#.*', stripped_line):
+                    continue
+                parsed_line = parser.parse(stripped_line)
+                if parsed_line is not None:
+                    clauses.append(parsed_line)
+        return cls(Clauses.from_literal_formulas(clauses))
 
     def solve(self) -> Optional[Clauses]:
         """Return the solution if the formula is solvable."""
-        return self._davis_putnam_algorithm(self.clauses)
+        return self._davis_putnam_algorithm(deepcopy(self.clauses))
 
     def _davis_putnam_algorithm(self, clauses: Clauses,
                                 backtrack: Optional[Set[int]] = None) \
@@ -88,6 +88,6 @@ if __name__ == "__main__":
     solution = sat_solver.solve()
     if solution:
         print(solution.clauses)
-        print(solution.literal_clauses)
+        print(solution)
     else:
         print("No solution.")

@@ -1,6 +1,6 @@
 from typing import *
 
-from clauses import Clauses
+from sat_solver.clauses import Clauses
 from dpll_solver import DpllSatSolver
 
 

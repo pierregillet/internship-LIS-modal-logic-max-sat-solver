@@ -1,8 +1,8 @@
 from ply import yacc
 
 # Get the token map from the lexer.  This is required.
-from lexer import lexer, tokenize, tokens
-import operators as op
+from logic_formula_parser.lexer import lexer, tokenize, tokens
+import logic_formula_parser.operators as op
 
 precedence = (
     ("left", "IMPLY"),
@@ -83,8 +83,6 @@ def parse_file(filename: str):
 
 
 def parse(data: str):
-    tokenize(data)
-
     # yacc.yacc(write_tables=True, debug=True)
     parser = yacc.yacc()
     return parser.parse(data, lexer=lexer)

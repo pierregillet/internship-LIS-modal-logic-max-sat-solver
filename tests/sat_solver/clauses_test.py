@@ -6,6 +6,12 @@ from logic_formula_parser.operators import *
 
 class TestClauses:
     def test__is_leaf(self):
+        # a∨b
+        formula = Or(Proposition('a'), Proposition('b'))
+        leaves = _get_leaves(formula)
+        actual_leaves = {Proposition('a'), Proposition('b')}
+        assert leaves == actual_leaves
+
         # ¬◇c∨¬☐¬a∨d
         formula = Or(Or(Not(Diamond(Proposition('d'))),
                         Not(BoxNot(Proposition('a')))),

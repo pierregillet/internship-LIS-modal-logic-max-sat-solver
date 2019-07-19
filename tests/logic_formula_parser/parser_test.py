@@ -1,5 +1,5 @@
 from logic_formula_parser import parser, lexer
-from operators import *
+from logic_formula_parser.operators import *
 
 
 def test_tokenize():
