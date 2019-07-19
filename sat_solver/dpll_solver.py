@@ -82,8 +82,7 @@ class DpllSatSolver:
 
 if __name__ == "__main__":
     sat_solver = DpllSatSolver.from_file(
-        f"{pathlib.Path(__file__).parent.parent}"
-        "/tests/sat_solver/satisfiable_clauses.txt"
+        f"{pathlib.Path(__file__).parent.parent}/clauses_input.txt"
     )
     solution = sat_solver.solve()
     if solution:
