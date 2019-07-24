@@ -54,19 +54,22 @@ class DpllSatSolver:
             return clauses
         if clauses.contains_empty_clause():
             return None
-        mono_literals: Set[int] = clauses.find_mono_literals()
-        while mono_literals:
-            mono_literal = next(iter(mono_literals))
-            backtrack.add(mono_literal)
-            clauses.unit_propagate(mono_literal)
-            mono_literals = clauses.find_mono_literals()
 
-        pure_literals = clauses.find_pure_literals()
-        while pure_literals:
-            pure_literal = next(iter(pure_literals))
-            backtrack.add(pure_literal)
-            clauses.assign_pure_literal(pure_literal)
+        while True:
+            mono_literals: Set[int] = clauses.find_mono_literals()
+            if not mono_literals:
+                break
+            for mono_literal in mono_literals:
+                backtrack.add(mono_literal)
+                clauses.unit_propagate(mono_literal)
+
+        while True:
             pure_literals = clauses.find_pure_literals()
+            if not pure_literals:
+                break
+            for pure_literal in pure_literals:
+                backtrack.add(pure_literal)
+                clauses.assign_pure_literal(pure_literal)
 
         propositions = list(chain.from_iterable(clauses.clauses))
         if not propositions and backtrack:
