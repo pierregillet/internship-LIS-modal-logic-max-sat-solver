@@ -13,7 +13,7 @@ class Proposition:
         return hash(self.literal)
 
     def __str__(self) -> str:
-        return self.literal
+        return str(self.literal)
 
 
 class Operator:

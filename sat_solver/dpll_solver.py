@@ -45,7 +45,8 @@ class DpllSatSolver:
 
         Uses the DPLL algorithm to solve the formula under clausal form.
         """
-        # TODO: Make recursion a terminal recursion (no context to remember)
+        # TODO: Make recursion a terminal recursion (no context to remember).
+        #       It will give marginally but consistently better performance.
         if backtrack is None:
             backtrack = set()
 

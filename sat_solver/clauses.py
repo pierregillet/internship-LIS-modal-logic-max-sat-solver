@@ -23,7 +23,7 @@ class Clauses:
         self._translation: Dict[Leaf, int] = translation
 
     @classmethod
-    def from_literal_formulas(cls, formulas: Collection[Formula]) -> Clauses:
+    def from_literal_formulas(cls, formulas: List[Formula]) -> Clauses:
         """Create an instance of this class from clauses with propositions
         as strings. They will be replaced with integers.
 
@@ -31,8 +31,8 @@ class Clauses:
         keep 0 for False and 1 for True).
         If the literal is negative, the integer takes a negative value.
         """
-
-        clauses, translation = _convert_to_int(formulas)
+        modal_formulas = generate_modal_axioms(formulas)
+        clauses, translation = _convert_to_int(formulas + modal_formulas)
         return cls(clauses, translation)
 
     def __copy__(self):
@@ -49,6 +49,7 @@ class Clauses:
                     return leaf
                 elif value == -number:
                     return Not(leaf)
+
         output = ""
         for clause in self._clauses:
             for index, proposition in enumerate(clause):
@@ -139,28 +140,26 @@ class Clauses:
 
 def generate_modal_axioms(formulas: Collection[Formula]) -> List[Formula]:
     output: List[Formula] = []
-    propositions = _get_leaves(clauses)
+    propositions = set()
+    for formula in formulas:
+        propositions |= _get_leaves(formula)
     for f in propositions:
         # ☐f→f <=> ¬☐f∨f
-        output.append([f, "☐", "¬", f])
+        output.append(
+            Or(Proposition(f),
+               Not(Box(Proposition(f))))
+        )
         # ☐f→¬◇¬f <=> ¬☐f∨¬◇¬f
-        output.append([f, "☐", "¬", f, "¬", "◇", "¬"])
-        # ☐f→◇f <=> ¬☐f∨◇f
-        output.append([f, "☐", "¬", f, "◇"])
+        output.append(
+            Or(Not(Box(Proposition(f))),
+               Not(DiamondNot(Proposition(f))))
+        )
+        # ☐f→◇f <=> ¬ ☐f∨◇f
+        output.append(
+            Or(Not(Box(Proposition(f))),
+               Diamond(Proposition(f)))
+        )
     return output
-
-# def generate_modal_axioms(clauses: List[List[str]]) \
-#         -> List[List[str]]:
-#     output: List[List[str]] = []
-#     propositions = Clauses.get_distinct_propositions(clauses)
-#     for f in propositions:
-#         # ☐f→f <=> ¬☐f∨f
-#         output.append([f, "☐", "¬", f])
-#         # ☐f→¬◇¬f <=> ¬☐f∨¬◇¬f
-#         output.append([f, "☐", "¬", f, "¬", "◇", "¬"])
-#         # ☐f→◇f <=> ¬☐f∨◇f
-#         output.append([f, "☐", "¬", f, "◇"])
-#     return output
 
 
 def _is_clausal_form(formula: List[str]) -> bool:
@@ -200,6 +199,7 @@ def _create_translation(clauses: Collection[Formula]) -> Dict[Leaf, int]:
 def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
     """Return a set containing the individual propositions found in the tree.
     """
+
     def recursively_search(formula: Formula) -> Set[Proposition]:
         if isinstance(formula, Proposition):
             return {formula}
@@ -209,6 +209,7 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
                 if child is not None:
                     leaves |= recursively_search(child)
             return leaves
+
     return {recursively_search(formula) for formula in formulas}
 
 
@@ -227,8 +228,8 @@ def _is_leaf(element: Leaf) -> bool:
         return True
     else:
         if element.children[0] is None \
-           and isinstance(element.children[1], Proposition) \
-           and not isinstance(element, Not):
+                and isinstance(element.children[1], Proposition) \
+                and not isinstance(element, Not):
             return True
     return False
 
