@@ -7,7 +7,6 @@ from __future__ import annotations
 from itertools import chain
 from typing import *
 
-# from logic_formula_parser import logic_parser
 from logic_formula_parser.operators import *  # as op
 
 
@@ -140,9 +139,7 @@ class Clauses:
 
 def generate_modal_axioms(formulas: Collection[Formula]) -> List[Formula]:
     output: List[Formula] = []
-    propositions = set()
-    for formula in formulas:
-        propositions |= _get_leaves(formula)
+    propositions = _get_propositions(formulas)
     for f in propositions:
         # ☐f→f <=> ¬☐f∨f
         output.append(
@@ -199,7 +196,6 @@ def _create_translation(clauses: Collection[Formula]) -> Dict[Leaf, int]:
 def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
     """Return a set containing the individual propositions found in the tree.
     """
-
     def recursively_search(formula: Formula) -> Set[Proposition]:
         if isinstance(formula, Proposition):
             return {formula}
@@ -209,8 +205,10 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
                 if child is not None:
                     leaves |= recursively_search(child)
             return leaves
-
-    return {recursively_search(formula) for formula in formulas}
+    output = set()
+    for formula in formulas:
+        output |= recursively_search(formula)
+    return output
 
 
 def _get_leaves(formula: Formula) -> Set[Leaf]:
@@ -228,8 +226,7 @@ def _is_leaf(element: Leaf) -> bool:
         return True
     else:
         if element.children[0] is None \
-                and isinstance(element.children[1], Proposition) \
-                and not isinstance(element, Not):
+                and isinstance(element.children[1], Proposition):
             return True
     return False
 

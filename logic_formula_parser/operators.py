@@ -24,6 +24,8 @@ class Operator:
         self.right = right
 
     def __eq__(self, o: Operator) -> bool:
+        if not isinstance(o, Operator):
+            return False
         return self.left == o.left and self.right == o.right
 
     def __hash__(self):

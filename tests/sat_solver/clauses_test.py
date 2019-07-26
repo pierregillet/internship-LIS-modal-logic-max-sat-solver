@@ -1,6 +1,6 @@
 import pytest
 
-from sat_solver.clauses import Clauses, _get_leaves
+from sat_solver.clauses import Clauses, _get_leaves, _get_propositions
 from logic_formula_parser.operators import *
 
 
@@ -12,14 +12,31 @@ class TestClauses:
         actual_leaves = {Proposition('a'), Proposition('b')}
         assert leaves == actual_leaves
 
-        # ¬◇c∨¬☐¬a∨d
+        # ¬◇d∨¬☐¬a∨d
         formula = Or(Or(Not(Diamond(Proposition('d'))),
                         Not(BoxNot(Proposition('a')))),
                      Proposition('d'))
         leaves = _get_leaves(formula)
-        actual_leaves = {Diamond(Proposition('d')), BoxNot(Proposition('a')),
+        actual_leaves = {Not(Diamond(Proposition('d'))),
+                         Not(BoxNot(Proposition('a'))),
                          Proposition('d')}
         assert leaves == actual_leaves
+
+    def test__get_propositions(self):
+        # ¬◇d∨¬☐¬a∨d
+        # ¬◇e∨¬☐a∨¬a
+        formulas = [
+            Or(Or(Not(Diamond(Proposition('d'))),
+                  Not(BoxNot(Proposition('a')))),
+               Proposition('d')),
+            Or(Or(Not(Diamond(Proposition('e'))),
+                  Not(Box(Proposition('a')))),
+               Proposition('a')),
+        ]
+        propositions = _get_propositions(formulas)
+        actual_propositions = {Proposition('a'), Proposition('b'),
+                               Proposition('d'), Proposition('e')}
+        assert propositions == actual_propositions
 
     # def test_is_mono_literal(self):
     #     multi_literal = {-1, -3, -1}
