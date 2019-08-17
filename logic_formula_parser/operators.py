@@ -46,29 +46,34 @@ class Not(UnaryOperator):
         return f'¬{self.right}'
 
 
-class Box(UnaryOperator):
+class L(UnaryOperator):
     def __str__(self) -> str:
-        return f'☐{self.right}'
+        return f'L{self.right}'
 
 
-class BoxNot(UnaryOperator):
+class LNot(UnaryOperator):
     def __str__(self) -> str:
-        return f'☐¬{self.right}'
+        return f'L¬{self.right}'
 
 
-class Diamond(UnaryOperator):
+class H(UnaryOperator):
     def __str__(self) -> str:
-        return f'◇{self.right}'
+        return f'H{self.right}'
 
 
-class DiamondNot(UnaryOperator):
+class HNot(UnaryOperator):
     def __str__(self) -> str:
-        return f'◇¬{self.right}'
+        return f'H¬{self.right}'
 
 
-class Imply(Operator):
+class HBox(UnaryOperator):
     def __str__(self) -> str:
-        return f'{self.left}→{self.right}'
+        return f'[H]{self.right}'
+
+
+class HBoxNot(UnaryOperator):
+    def __str__(self) -> str:
+        return f'[H]¬{self.right}'
 
 
 class And(Operator):
@@ -79,6 +84,11 @@ class And(Operator):
 class Or(Operator):
     def __str__(self) -> str:
         return f'{self.left}∨{self.right}'
+
+
+class Imply(Operator):
+    def __str__(self) -> str:
+        return f'{self.left}→{self.right}'
 
 
 Formula = NewType('SubFormula', Union[Operator, Proposition])

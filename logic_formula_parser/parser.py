@@ -1,6 +1,6 @@
 from ply import yacc
 
-# Get the token map from the lexer.  This is required.
+# Get the token map from the lexer. This is required.
 from logic_formula_parser.lexer import lexer, tokenize, tokens
 import logic_formula_parser.operators as op
 
@@ -8,7 +8,8 @@ precedence = (
     ("left", "IMPLY"),
     ("left", "OR"),
     ("left", "AND"),
-    ("right", "NOT", "BOX", "DIAMOND")
+    ("right", "HBOX", "L", "H"),
+    ("right", "NOT")
 )
 
 
@@ -27,43 +28,53 @@ def p_formula_and(p):
     p[0] = op.And(p[1], p[3])
 
 
-def p_formula_term(p):
+def p_formula(p):
     'formula : term'
     p[0] = p[1]
 
 
 def p_term_not(p):
-    'term : NOT proposition'
+    'term : NOT leaf'
     p[0] = op.Not(p[2])
 
 
-def p_term_var(p):
-    'term : proposition'
+def p_term(p):
+    'term : leaf'
     p[0] = p[1]
 
 
-def p_proposition_box_not(p):
-    'proposition : BOX NOT PROPOSITION'
-    p[0] = op.BoxNot(op.Proposition(p[3]))
+def p_leaf_hbox_not(p):
+    'leaf : HBOX NOT PROPOSITION'
+    p[0] = op.HBox(op.Not(op.Proposition(p[3])))
 
 
-def p_proposition_diamond_not(p):
-    'proposition : DIAMOND NOT PROPOSITION'
-    p[0] = op.DiamondNot(op.Proposition(p[3]))
+def p_leaf_hbox(p):
+    'leaf : HBOX PROPOSITION'
+    p[0] = op.HBox(op.Proposition(p[2]))
 
 
-def p_proposition_box(p):
-    'proposition : BOX PROPOSITION'
-    p[0] = op.Box(op.Proposition(p[2]))
+def p_leaf_not_h(p):
+    'leaf : H NOT PROPOSITION'
+    p[0] = op.H(op.Not(op.Proposition(p[3])))
 
 
-def p_proposition_diamond(p):
-    'proposition : DIAMOND PROPOSITION'
-    p[0] = op.Diamond(op.Proposition(p[2]))
+def p_leaf_h(p):
+    'leaf : H PROPOSITION'
+    p[0] = op.H(op.Proposition(p[2]))
 
 
-def p_proposition_proposition(p):
-    'proposition : PROPOSITION'
+def p_leaf_l_not(p):
+    'leaf : L NOT PROPOSITION'
+    p[0] = op.LNot(op.Proposition(p[3]))
+
+
+def p_leaf_l(p):
+    'leaf : L PROPOSITION'
+    p[0] = op.L(op.Proposition(p[2]))
+
+
+def p_leaf(p):
+    'leaf : PROPOSITION'
     p[0] = op.Proposition(p[1])
 
 
@@ -89,7 +100,7 @@ def parse(data: str):
 
 
 if __name__ == "__main__":
-    # data = "a&b|c|-d&-[]e|-<>-a->b"
-    data = "-a|[]-b"
-    result = parse(data)
+    # formula = "a&b|c|-d&-[H]e|-L-a->b"
+    formula = "-a|[H]-b&L"
+    result = parse(formula)
     print(result)

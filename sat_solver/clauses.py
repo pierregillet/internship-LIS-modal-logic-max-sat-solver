@@ -140,22 +140,22 @@ class Clauses:
 def generate_modal_axioms(formulas: Collection[Formula]) -> List[Formula]:
     output: List[Formula] = []
     propositions = _get_propositions(formulas)
-    for f in propositions:
-        # ☐f→f <=> ¬☐f∨f
-        output.append(
-            Or(Proposition(f),
-               Not(Box(Proposition(f))))
-        )
-        # ☐f→¬◇¬f <=> ¬☐f∨¬◇¬f
-        output.append(
-            Or(Not(Box(Proposition(f))),
-               Not(DiamondNot(Proposition(f))))
-        )
-        # ☐f→◇f <=> ¬ ☐f∨◇f
-        output.append(
-            Or(Not(Box(Proposition(f))),
-               Diamond(Proposition(f)))
-        )
+    # for f in propositions:
+    #     # ☐f→f <=> ¬☐f∨f
+    #     output.append(
+    #         Or(Proposition(f),
+    #            Not(Box(Proposition(f))))
+    #     )
+    #     # ☐f→¬◇¬f <=> ¬☐f∨¬◇¬f
+    #     output.append(
+    #         Or(Not(Box(Proposition(f))),
+    #            Not(DiamondNot(Proposition(f))))
+    #     )
+    #     # ☐f→◇f <=> ¬ ☐f∨◇f
+    #     output.append(
+    #         Or(Not(Box(Proposition(f))),
+    #            Diamond(Proposition(f)))
+    #     )
     return output
 
 
