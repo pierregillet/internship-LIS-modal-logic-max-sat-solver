@@ -4,7 +4,7 @@ from sat_solver.clauses import Clauses, _get_leaves, _get_propositions
 from logic_formula_parser.operators import *
 
 
-# class TestClauses:
+class TestClauses:
 #     def test__is_leaf(self):
 #         # a∨b
 #         formula = Or(Proposition('a'), Proposition('b'))
@@ -22,22 +22,22 @@ from logic_formula_parser.operators import *
 #                          Proposition('d')}
 #         assert leaves == actual_leaves
 #
-#     def test__get_propositions(self):
-#         # ¬◇d∨¬☐¬a∨d
-#         # ¬◇e∨¬☐a∨¬a
-#         formulas = [
-#             Or(Or(Not(Diamond(Proposition('d'))),
-#                   Not(BoxNot(Proposition('a')))),
-#                Proposition('d')),
-#             Or(Or(Not(Diamond(Proposition('e'))),
-#                   Not(Box(Proposition('a')))),
-#                Proposition('a')),
-#         ]
-#         propositions = _get_propositions(formulas)
-#         actual_propositions = {Proposition('a'), Proposition('b'),
-#                                Proposition('d'), Proposition('e')}
-#         assert propositions == actual_propositions
-#
+    def test__get_propositions(self):
+        # ¬[H]d∨¬H¬a∨d
+        # ¬Le∨[H]a∨¬b
+        formulas = [
+            Or(Or(Not(HBox(Proposition('d'))),
+                  Not(HNot(Proposition('a')))),
+               Proposition('d')),
+            Or(Or(Not(L(Proposition('e'))),
+                  HBox(Proposition('a'))),
+               Not(Proposition('b'))),
+        ]
+        propositions = _get_propositions(formulas)
+        actual_propositions = {Proposition('a'), Proposition('b'),
+                               Proposition('d'), Proposition('e')}
+        assert propositions == actual_propositions
+
 #     def test_is_mono_literal(self):
 #         multi_literal = {-1, -3, -1}
 #         assert Clauses.is_mono_literal(multi_literal) is False
