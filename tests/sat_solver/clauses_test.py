@@ -5,23 +5,23 @@ from logic_formula_parser.operators import *
 
 
 class TestClauses:
-#     def test__is_leaf(self):
-#         # a∨b
-#         formula = Or(Proposition('a'), Proposition('b'))
-#         leaves = _get_leaves(formula)
-#         actual_leaves = {Proposition('a'), Proposition('b')}
-#         assert leaves == actual_leaves
-#
-#         # ¬◇d∨¬☐¬a∨d
-#         formula = Or(Or(Not(Diamond(Proposition('d'))),
-#                         Not(BoxNot(Proposition('a')))),
-#                      Proposition('d'))
-#         leaves = _get_leaves(formula)
-#         actual_leaves = {Not(Diamond(Proposition('d'))),
-#                          Not(BoxNot(Proposition('a'))),
-#                          Proposition('d')}
-#         assert leaves == actual_leaves
-#
+    def test__get_leaves(self):
+        # a∨b
+        formula = Or(Proposition('a'), Proposition('b'))
+        leaves = _get_leaves(formula)
+        actual_leaves = {Proposition('a'), Proposition('b')}
+        assert leaves == actual_leaves
+
+        # ¬Hd∨¬L¬a∨¬d∧¬d
+        formula = Or(Or(Not(H(Proposition('d'))),
+                        Not(LNot(Proposition('a')))),
+                     And(Not(Proposition('d')), Not(Proposition('d'))))
+        leaves = _get_leaves(formula)
+        actual_leaves = {Not(H(Proposition('d'))),
+                         Not(LNot(Proposition('a'))),
+                         Not(Proposition('d'))}
+        assert leaves == actual_leaves
+
     def test__get_propositions(self):
         # ¬[H]d∨¬H¬a∨d
         # ¬Le∨[H]a∨¬b

@@ -196,6 +196,7 @@ def _create_translation(clauses: Collection[Formula]) -> Dict[Leaf, int]:
 def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
     """Return a set containing the individual propositions found in the tree.
     """
+
     def recursively_search(formula: Formula) -> Set[Proposition]:
         if isinstance(formula, Proposition):
             return {formula}
@@ -205,6 +206,7 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
                 if child is not None:
                     leaves |= recursively_search(child)
             return leaves
+
     output = set()
     for formula in formulas:
         output |= recursively_search(formula)
@@ -224,8 +226,12 @@ def _get_leaves(formula: Formula) -> Set[Leaf]:
 def _is_leaf(element: Leaf) -> bool:
     if isinstance(element, Proposition):
         return True
+    # Should include the "Not" operator for the DPLL algorithm.
+    # elif isinstance(element, Not):
+    #     return False
     else:
-        if element.children[0] is None \
+        if isinstance(element, Not) \
+                or element.children[0] is None \
                 and isinstance(element.children[1], Proposition):
             return True
     return False
