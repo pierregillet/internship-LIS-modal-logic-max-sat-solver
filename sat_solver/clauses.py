@@ -226,15 +226,25 @@ def _get_leaves(formula: Formula) -> Set[Leaf]:
 def _is_leaf(element: Leaf) -> bool:
     if isinstance(element, Proposition):
         return True
+    # elif isinstance(element, Not) \
+    #         and not isinstance(element.children[1], Proposition):
+    #     return True
+    elif not isinstance(element, Not) \
+            and element.children[0] is None \
+            and isinstance(element.children[1], Proposition):
+        return True
+    else:
+        return False
     # Should include the "Not" operator for the DPLL algorithm.
     # elif isinstance(element, Not):
     #     return False
-    else:
-        if isinstance(element, Not) \
-                or element.children[0] is None \
-                and isinstance(element.children[1], Proposition):
-            return True
-    return False
+    # else:
+    #     if isinstance(element, Not) \
+    #             and not isinstance(element.children[1], Proposition) \
+    #             or element.children[0] is None \
+    #             and isinstance(element.children[1], Proposition):
+    #         return True
+    # return False
 
 
 def _is_mono_literal(clause: Set[int]) -> bool:

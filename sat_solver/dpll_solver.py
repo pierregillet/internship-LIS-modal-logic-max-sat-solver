@@ -23,6 +23,8 @@ class DpllSatSolver:
     @classmethod
     def from_file(cls, filename: str):
         """Create solver with the clauses from the file."""
+        # TODO: Refactor this classmethod ; the comments syntax
+        #       should be handled by the parser instead (in the grammar).
         clauses = []
         with open(filename) as f:
             for line in f:
