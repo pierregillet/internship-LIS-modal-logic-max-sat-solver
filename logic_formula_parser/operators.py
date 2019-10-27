@@ -92,4 +92,4 @@ class Imply(Operator):
 
 
 Formula = NewType('SubFormula', Union[Operator, Proposition])
-Leaf = NewType('Leaf', Union[UnaryOperator, Proposition])
+Leaf: type = NewType('Leaf', Union[UnaryOperator, Proposition])

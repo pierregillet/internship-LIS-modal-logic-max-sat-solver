@@ -4,10 +4,13 @@ or mono-literal checks.
 """
 
 from __future__ import annotations
+
+import re
 from itertools import chain
 from typing import *
 
 from logic_formula_parser.operators import *  # as op
+from logic_formula_parser import parser
 
 
 class Clauses:
@@ -20,6 +23,22 @@ class Clauses:
         """
         self._clauses: List[Set[int]] = clauses
         self._translation: Dict[Leaf, int] = translation
+
+    @classmethod
+    def from_file(cls, filename: str):
+        """Create the clauses from the file."""
+        # TODO: Refactor this classmethod ; the comments syntax
+        #       should be handled by the parser instead (in the grammar).
+        clauses = []
+        with open(filename) as f:
+            for line in f:
+                stripped_line = line.strip()
+                if stripped_line is None or re .match(r'^#.*', stripped_line):
+                    continue
+                parsed_line = parser.parse(stripped_line)
+                if parsed_line is not None:
+                    clauses.append(parsed_line)
+        return cls(Clauses.from_literal_formulas(clauses))
 
     @classmethod
     def from_literal_formulas(cls, formulas: List[Formula]) -> Clauses:
@@ -198,7 +217,7 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
     """
 
     def recursively_search(formula: Formula) -> Set[Proposition]:
-        if isinstance(formula, Proposition):
+        if _is_leaf(formula):
             return {formula}
         elif formula is not None:
             leaves: Set[Leaf] = set()
@@ -214,7 +233,7 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
 
 
 def _get_leaves(formula: Formula) -> Set[Leaf]:
-    if isinstance(formula, Proposition):
+    if _is_leaf(formula):
         return {formula}
     leaves: Set[Leaf] = set()
     for child in formula.children:
@@ -226,11 +245,10 @@ def _get_leaves(formula: Formula) -> Set[Leaf]:
 def _is_leaf(element: Leaf) -> bool:
     if isinstance(element, Proposition):
         return True
-    # elif isinstance(element, Not) \
-    #         and not isinstance(element.children[1], Proposition):
-    #     return True
-    elif not isinstance(element, Not) \
-            and element.children[0] is None \
+    elif isinstance(element, Not) \
+            and isinstance(element.children[1], Proposition):
+        return True
+    elif element.children[0] is None \
             and isinstance(element.children[1], Proposition):
         return True
     else:

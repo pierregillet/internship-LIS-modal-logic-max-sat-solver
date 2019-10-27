@@ -9,12 +9,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bf457050-ece6-402e-b622-09d42ffb96cf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../logic_formula_parser/clauses_translator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../logic_formula_parser/logic_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../logic_formula_parser/logic_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clauses.py" beforeDir="false" afterPath="$PROJECT_DIR$/clauses.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dpll_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/dpll_solver.py" afterDir="false" />
-    </list>
+    <list default="true" id="bf457050-ece6-402e-b622-09d42ffb96cf" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +26,7 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../bachelor_computer_games_technology/computer_games_ai/face_recognition_assignment/source" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -52,6 +48,7 @@
       <option name="presentableId" value="Default" />
       <updated>1562225803288</updated>
       <workItem from="1562225809679" duration="22000" />
+      <workItem from="1568384937751" duration="50000" />
     </task>
     <servers />
   </component>
@@ -60,7 +57,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

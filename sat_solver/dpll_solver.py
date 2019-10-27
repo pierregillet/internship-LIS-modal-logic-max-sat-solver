@@ -20,22 +20,6 @@ class DpllSatSolver:
     def __init__(self, clauses: Clauses) -> None:
         self.clauses = clauses
 
-    @classmethod
-    def from_file(cls, filename: str):
-        """Create solver with the clauses from the file."""
-        # TODO: Refactor this classmethod ; the comments syntax
-        #       should be handled by the parser instead (in the grammar).
-        clauses = []
-        with open(filename) as f:
-            for line in f:
-                stripped_line = line.strip()
-                if stripped_line is None or re.match(r'^#.*', stripped_line):
-                    continue
-                parsed_line = parser.parse(stripped_line)
-                if parsed_line is not None:
-                    clauses.append(parsed_line)
-        return cls(Clauses.from_literal_formulas(clauses))
-
     def solve(self) -> Optional[Clauses]:
         """Return the solution if the formula is solvable."""
         return self._davis_putnam_algorithm(deepcopy(self.clauses))
@@ -82,14 +66,18 @@ class DpllSatSolver:
         positive.add_clause({next_literal})
         negative = copy(clauses)
         negative.add_clause({-next_literal})
-        return (self._davis_putnam_algorithm(positive, backtrack)
-                or self._davis_putnam_algorithm(negative, backtrack))
+        positive_solution = self._davis_putnam_algorithm(positive, backtrack)
+        if positive_solution:
+            return positive_solution
+        else:
+            # Negative solution
+            return self._davis_putnam_algorithm(negative, backtrack)
 
 
 if __name__ == "__main__":
-    sat_solver = DpllSatSolver.from_file(
+    sat_solver = DpllSatSolver(Clauses.from_file(
         f"{pathlib.Path(__file__).parent.parent}/clauses_input.txt"
-    )
+    ))
     solution = sat_solver.solve()
     if solution:
         print(solution.clauses)
