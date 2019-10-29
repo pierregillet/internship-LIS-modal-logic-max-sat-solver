@@ -38,7 +38,7 @@ class Clauses:
                 parsed_line = parser.parse(stripped_line)
                 if parsed_line is not None:
                     clauses.append(parsed_line)
-        return cls(Clauses.from_literal_formulas(clauses))
+        return Clauses.from_literal_formulas(clauses)
 
     @classmethod
     def from_literal_formulas(cls, formulas: List[Formula]) -> Clauses:
@@ -205,11 +205,33 @@ def _create_translation(clauses: Collection[Formula]) -> Dict[Leaf, int]:
     _OFFSET = 2  # Offset to avoid adding 0 and 1 to the translation table.
     translation: Dict[Leaf, int] = {}
     unique_propositions = set()
-    for clause in clauses:
-        unique_propositions |= _get_leaves(clause)
-    for index, value in enumerate(unique_propositions):
-        translation[value] = index + _OFFSET
+    # for clause in clauses:
+    #     unique_propositions |= _get_literals(clause)
+    unique_propositions: Set[Proposition] = _get_literals(clauses)
+    for index, variable in enumerate(unique_propositions):
+        translation[variable] = index + _OFFSET
+        translation[Not(variable)] = -index - _OFFSET
     return translation
+
+
+def _get_literals(formulas: Collection[Formula]) -> Set[Proposition]:
+    """Return a set containing the literals found in the tree.
+    """
+
+    def recursively_search(formula: Formula) -> Set[Proposition]:
+        if isinstance(formula, Proposition):
+            return {formula}
+        elif formula is not None:
+            leaves: Set[Leaf] = set()
+            for child in formula.children:
+                if child is not None:
+                    leaves |= recursively_search(child)
+            return leaves
+
+    output = set()
+    for formula in formulas:
+        output |= recursively_search(formula)
+    return output
 
 
 def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
@@ -233,6 +255,9 @@ def _get_propositions(formulas: Collection[Formula]) -> Set[Proposition]:
 
 
 def _get_leaves(formula: Formula) -> Set[Leaf]:
+    """Return a set of leaves of the tree. This includes propositions and
+    negative propositions such as Not(Proposition('a')).
+    """
     if _is_leaf(formula):
         return {formula}
     leaves: Set[Leaf] = set()
@@ -243,6 +268,9 @@ def _get_leaves(formula: Formula) -> Set[Leaf]:
 
 
 def _is_leaf(element: Leaf) -> bool:
+    """Return True if the element is a leaf, i.e. either a proposition or a
+    negative proposition such as Not(Proposition('a')).
+    """
     if isinstance(element, Proposition):
         return True
     elif isinstance(element, Not) \
@@ -253,16 +281,6 @@ def _is_leaf(element: Leaf) -> bool:
         return True
     else:
         return False
-    # Should include the "Not" operator for the DPLL algorithm.
-    # elif isinstance(element, Not):
-    #     return False
-    # else:
-    #     if isinstance(element, Not) \
-    #             and not isinstance(element.children[1], Proposition) \
-    #             or element.children[0] is None \
-    #             and isinstance(element.children[1], Proposition):
-    #         return True
-    # return False
 
 
 def _is_mono_literal(clause: Set[int]) -> bool:
