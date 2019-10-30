@@ -33,7 +33,7 @@ class Clauses:
         with open(filename) as f:
             for line in f:
                 stripped_line = line.strip()
-                if stripped_line is None or re .match(r'^#.*', stripped_line):
+                if stripped_line is None or re.match(r'^#.*', stripped_line):
                     continue
                 parsed_line = parser.parse(stripped_line)
                 if parsed_line is not None:
@@ -271,16 +271,22 @@ def _is_leaf(element: Leaf) -> bool:
     """Return True if the element is a leaf, i.e. either a proposition or a
     negative proposition such as Not(Proposition('a')).
     """
-    if isinstance(element, Proposition):
-        return True
-    elif isinstance(element, Not) \
-            and isinstance(element.children[1], Proposition):
-        return True
-    elif element.children[0] is None \
-            and isinstance(element.children[1], Proposition):
-        return True
-    else:
+    # TODO: Only check if it is Or, And, and Imply
+    if (isinstance(element, And)
+            or isinstance(element, Or)
+            or isinstance(element, Imply)):
         return False
+    return True
+    # if isinstance(element, Proposition):
+    #     return True
+    # elif isinstance(element, Not) \
+    #         and isinstance(element.children[1], Proposition):
+    #     return True
+    # elif element.children[0] is None \
+    #         and isinstance(element.children[1], Proposition):
+    #     return True
+    # else:
+    #     return False
 
 
 def _is_mono_literal(clause: Set[int]) -> bool:

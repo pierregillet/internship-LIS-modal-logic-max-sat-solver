@@ -35,7 +35,7 @@ class TestClauses:
         leaves = _get_leaves(formula)
         actual_leaves = {H(Proposition('d')),
                          LNot(Proposition('a')),
-                         Proposition('d')}
+                         Not(Proposition('d'))}
         assert leaves == actual_leaves
 
     def test__get_propositions(self):
